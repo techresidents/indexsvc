@@ -34,10 +34,10 @@ struct IndexData {
 service TIndexService extends core.TRService
 {
     /*
-        Index data for specified keys.
+        Index data for the specified keys.
         Args:
             context: string representing the request context
-            indexData: Thrift IndexData object. Keys required.
+            indexData: Thrift IndexData object. IndexData.keys required.
         Returns:
             None
     */

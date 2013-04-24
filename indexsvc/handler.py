@@ -75,17 +75,16 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         join([self.thread_pool, self.job_monitor, super(IndexServiceHandler, self)], timeout)
 
 
-    def _validate_index_params(self, context, index_data):
+    def _validate_index_params(self, context, index_data, index_all):
         """Validate input params of the index() method
         """
         if not context:
             raise InvalidDataException('Invalid context')
-
         # TODO validate index_data
 
 
     def index(self, context, index_data):
-        """Index data.
+        """Index data for specified keys. Use to update an existing index.
 
         This method creates a job to index the specified input data.
 
@@ -99,12 +98,59 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
+            return self._index(context, index_data, index_all=False)
 
+        except InvalidDataException as error:
+            self.log.exception(error)
+            raise InvalidDataException()
+        except Exception as error:
+            self.log.exception(error)
+            raise UnavailableException(str(error))
+
+    def indexAll(self, context, index_data):
+        """Index data for all keys. Use to update an existing index.
+
+        This method creates a job to index the specified input data.
+
+        Args:
+            context: String to identify calling context
+            index_data: Thrift IndexData object.
+        Returns:
+            None
+        Raises:
+            InvalidDataException if input data to index is invalid.
+            UnavailableException for any other unexpected error.
+        """
+        try:
+            return self._index(context, index_data, index_all=True)
+
+        except InvalidDataException as error:
+            self.log.exception(error)
+            raise InvalidDataException()
+        except Exception as error:
+            self.log.exception(error)
+            raise UnavailableException(str(error))
+
+    def _index(self, context, index_data, index_all=False):
+        """Help function. Pulled out common code.
+
+        This method creates a job to index the specified input data.
+
+        Args:
+            context: String to identify calling context
+            index_data: Thrift IndexData object.
+        Returns:
+            None
+        Raises:
+            InvalidDataException if input data to index is invalid.
+            UnavailableException for any other unexpected error.
+        """
+        try:
             # Get a db session
             db_session = self.get_database_session()
 
             # Validate inputs
-            self._validate_index_params(context, index_data)
+            self._validate_index_params(context, index_data, index_all)
 
             # If input specified a start-processing-time
             # convert it to UTC DateTime object.
@@ -128,13 +174,6 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             db_session.add(job)
             db_session.commit()
             return
-
-        except InvalidDataException as error:
-            self.log.exception(error)
-            raise InvalidDataException()
-        except Exception as error:
-            self.log.exception(error)
-            raise UnavailableException(str(error))
 
         finally:
             db_session.close()
