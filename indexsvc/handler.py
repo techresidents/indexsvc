@@ -9,11 +9,10 @@ from trpycore.timezone import tz
 from trsvcscore.db.models import IndexJob as IndexJobModel
 from trsvcscore.service.handler.service import ServiceHandler
 from trindexsvc.gen import TIndexService
-from trindexsvc.gen.ttypes import NotificationPriority, UnavailableException, InvalidDataException
+from trindexsvc.gen.ttypes import UnavailableException, InvalidDataException
 
 import settings
 
-from constants import NOTIFICATION_PRIORITY_VALUES
 from jobmonitor import IndexJobMonitor, IndexThreadPool
 from indexer import Indexer
 
@@ -161,7 +160,12 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
             # Massage data to be indexed into a flat string
             # TODO not sure best way to convert this object to JSON
+            # TODO This is where I'm at right now.
             data = index_data
+
+
+
+
 
             # Create IndexJob
             job = IndexJobModel(

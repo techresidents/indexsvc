@@ -34,7 +34,7 @@ struct IndexData {
 service TIndexService extends core.TRService
 {
     /*
-        Index data for the specified keys.
+        Update index data for the specified keys.
         Args:
             context: string representing the request context
             indexData: Thrift IndexData object. IndexData.keys required.
@@ -48,7 +48,7 @@ service TIndexService extends core.TRService
                 2:InvalidDataException invalidDataException),
 
     /*
-        Index all data within the index.
+        Update all data within the index.
         Args:
             context: string representing the request context
             indexData: Thrift IndexData object
@@ -60,4 +60,20 @@ service TIndexService extends core.TRService
         2: IndexData indexData) throws (
                 1:UnavailableException unavailableException,
                 2:InvalidDataException invalidDataException),
+
+    /*
+    For future.
+
+    void create(
+        1: string context,
+        2: indexData indexData) throws (
+                1:UnavailableException unavailableException,
+                2:InvalidDataException invalidDataException),
+
+    void delete(
+        1: string context,
+        2: indexData indexData) throws (
+                1:UnavailableException unavailableException,
+                2:InvalidDataException invalidDataException),
+    */
 }
