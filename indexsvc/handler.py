@@ -87,7 +87,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
     def index(self, context, index_data):
         """Index data.
 
-        This method creates a job to index the provided data.
+        This method creates a job to index the specified input data.
 
         Args:
             context: String to identify calling context
@@ -113,11 +113,17 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             else:
                 processing_start_time = func.current_timestamp()
 
-            # Create NotificationJobs
+            # Massage data to be indexed into a flat string
+            # TODO not sure best way to convert this object to JSON
+            data = index_data
+
+            # Create IndexJob
             job = IndexJobModel(
                 created=func.current_timestamp(),
+                context=context,
                 not_before=processing_start_time,
-                retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS
+                retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS,
+                data=data
             )
             db_session.add(job)
             db_session.commit()
