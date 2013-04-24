@@ -9,7 +9,7 @@ from trpycore.timezone import tz
 from trsvcscore.db.models import IndexJob as IndexJobModel
 from trsvcscore.service.handler.service import ServiceHandler
 from trindexsvc.gen import TIndexService
-from trindexsvc.gen.ttypes import NotificationPriority, UnavailableException, InvalidIndexDataException
+from trindexsvc.gen.ttypes import NotificationPriority, UnavailableException, InvalidDataException
 
 import settings
 
@@ -75,30 +75,27 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         join([self.thread_pool, self.job_monitor, super(IndexServiceHandler, self)], timeout)
 
 
-    def _validate_index_params(self, context, data):
+    def _validate_index_params(self, context, index_data):
         """Validate input params of the index() method
         """
         if not context:
-            raise InvalidIndexDataException('Invalid context')
+            raise InvalidDataException('Invalid context')
 
-        # TODO validate data
+        # TODO validate index_data
 
 
-    # TODO not_before, priority support?
-    def index(self, context, data):
+    def index(self, context, index_data):
         """Index data.
 
         This method creates a job to index the provided data.
 
         Args:
             context: String to identify calling context
-            data: Thrift IndexData object.
-
+            index_data: Thrift IndexData object.
         Returns:
             None
         Raises:
-            InvalidNotificationException if input Notification
-            object is invalid.
+            InvalidDataException if input data to index is invalid.
             UnavailableException for any other unexpected error.
         """
         try:
@@ -107,31 +104,28 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             db_session = self.get_database_session()
 
             # Validate inputs
-            self._validate_index_params(context, data)
+            self._validate_index_params(context, index_data)
 
-            # If notification specified a start-processing-time
+            # If input specified a start-processing-time
             # convert it to UTC DateTime object.
-            # TODO is this a bug? I don't see a notBefore attribute for this object.
-            if notification.notBefore is not None:
-                processing_start_time = tz.timestamp_to_utc(notification.notBefore)
+            if index_data.notBefore is not None:
+                processing_start_time = tz.timestamp_to_utc(index_data.notBefore)
             else:
                 processing_start_time = func.current_timestamp()
 
             # Create NotificationJobs
             job = IndexJobModel(
                 created=func.current_timestamp(),
-                not_before=func.processing_start_time,
-                priority=NOTIFICATION_PRIORITY_VALUES[
-                         NotificationPriority._VALUES_TO_NAMES[notification.priority]],
+                not_before=processing_start_time,
                 retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS
             )
             db_session.add(job)
             db_session.commit()
             return
 
-        except InvalidIndexDataException as error:
+        except InvalidDataException as error:
             self.log.exception(error)
-            raise InvalidIndexDataException()
+            raise InvalidDataException()
         except Exception as error:
             self.log.exception(error)
             raise UnavailableException(str(error))
