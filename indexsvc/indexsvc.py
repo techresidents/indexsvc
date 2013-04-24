@@ -17,26 +17,26 @@ from tridlcore.gen.ttypes import Status
 from trpycore.process.pid import pidfile, PidFileException
 from trsvcscore.service.default import DefaultService
 from trsvcscore.service.server.default import ThriftServer
-from trnotificationsvc.gen import TNotificationService
+from trindexsvc.gen import TIndexService
 
-from handler import NotificationServiceHandler
+from handler import IndexServiceHandler
 
 
 
-class NotificationService(DefaultService):
+class IndexService(DefaultService):
     def __init__(self):
 
-        handler = NotificationServiceHandler(self)
+        handler = IndexServiceHandler(self)
 
         server = ThriftServer(
             name="%s-thrift" % settings.SERVICE,
             interface=settings.THRIFT_SERVER_INTERFACE,
             port=settings.THRIFT_SERVER_PORT,
             handler=handler,
-            processor=TNotificationService.Processor(handler),
+            processor=TIndexService.Processor(handler),
             threads=1)
 
-        super(NotificationService, self).__init__(
+        super(IndexService, self).__init__(
             name=settings.SERVICE,
             version=version.VERSION,
             build=version.BUILD,
@@ -53,7 +53,7 @@ def main(argv):
 
 
             #Create service
-            service = NotificationService()
+            service = IndexService()
 
             #Register signal handlers
             def sigterm_handler(signum, stack_frame):
