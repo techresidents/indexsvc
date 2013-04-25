@@ -1,5 +1,7 @@
 import json
 
+from trindexsvc.gen.ttypes import IndexData
+
 class Encoder(json.JSONEncoder):
     """Encoder to encode Thrift IndexData objects
 

@@ -18,13 +18,13 @@ from trsvcscore.service.server.default import ThriftServer
 from trsvcscore.proxy.zoo import ZookeeperServiceProxy
 from trindexsvc.gen import TIndexService
 
-from handler import NotificationServiceHandler
+from handler import IndexServiceHandler
 
 
 class IndexTestService(DefaultService):
     def __init__(self, hostname, port):
 
-        self.handler = NotificationServiceHandler(self)
+        self.handler = IndexServiceHandler(self)
 
         server = ThriftServer(
             name="%s-thrift" % SERVICE_NAME,
@@ -45,7 +45,7 @@ class IndexTestService(DefaultService):
 
 class IntegrationTestCase(unittest.TestCase):
     """
-    This class creates and starts one instance of the notification service.
+    This class creates and starts one instance of the index service.
     """
 
     @classmethod

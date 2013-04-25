@@ -5,7 +5,9 @@ thrift==0.8.0
 
 git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/zookeeper.git@3.3.5#egg=zookeeper
 git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trpycore.git@0.8.0#egg=trpycore
-git+ssh://dev.techresidents.com/tr/repos/techresidents/services/core/python/trsvcscore.git@0.19.0#egg=trsvcscore
+git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/tres.git@integration#egg=tres
+git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trhttp.git@integration#egg=trhttp
+git+ssh://dev.techresidents.com/tr/repos/techresidents/services/core/python/trsvcscore.git@integration#egg=trsvcscore
 
 http://nexus.dev.techresidents.com/content/groups/public/com/techresidents/services/core/idl/idl-core-python/0.7.0/idl-core-python-0.7.0-bin.tar.gz#egg=tridlcore
 http://nexus.dev.techresidents.com/content/groups/public/com/techresidents/services/indexsvc/indexsvc-idl-python/0.1-SNAPSHOT/indexsvc-idl-python-0.1-SNAPSHOT-bin.tar.gz#egg=trindexsvc
