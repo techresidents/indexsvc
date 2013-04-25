@@ -75,5 +75,11 @@ service TIndexService extends core.TRService
         2: indexData indexData) throws (
                 1:UnavailableException unavailableException,
                 2:InvalidDataException invalidDataException),
+
+    void deleteAll(
+        1: string context,
+        2: indexData indexData) throws (
+                1:UnavailableException unavailableException,
+                2:InvalidDataException invalidDataException),
     */
 }

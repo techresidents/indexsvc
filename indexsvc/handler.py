@@ -1,3 +1,4 @@
+import json
 import logging
 
 from sqlalchemy.sql import func
@@ -13,6 +14,7 @@ from trindexsvc.gen.ttypes import UnavailableException, InvalidDataException
 
 import settings
 
+from encoder import Encoder
 from jobmonitor import IndexJobMonitor, IndexThreadPool
 from indexer import Indexer
 
@@ -145,11 +147,11 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            # Get a db session
-            db_session = self.get_database_session()
-
             # Validate inputs
             self._validate_index_params(context, index_data, index_all)
+
+            # Get a db session
+            db_session = self.get_database_session()
 
             # If input specified a start-processing-time
             # convert it to UTC DateTime object.
@@ -158,14 +160,12 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             else:
                 processing_start_time = func.current_timestamp()
 
-            # Massage data to be indexed into a flat string
-            # TODO not sure best way to convert this object to JSON
-            # TODO This is where I'm at right now.
-            data = index_data
-
-
-
-
+            # Create JSON representation of the input index data
+            index_data_json = json.dumps(index_data, cls=Encoder)
+            # Add the index operation to this JSON data so that the IndexJob
+            # completely specifies the work that needs to be done.
+            data = json.loads(index_data_json)
+            data['action'] = 'UPDATE'
 
             # Create IndexJob
             job = IndexJobModel(
@@ -173,7 +173,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 context=context,
                 not_before=processing_start_time,
                 retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS,
-                data=data
+                data=json.dumps(data)
             )
             db_session.add(job)
             db_session.commit()
