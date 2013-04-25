@@ -75,22 +75,6 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         """Join handler."""
         join([self.thread_pool, self.job_monitor, super(IndexServiceHandler, self)], timeout)
 
-    def _validate_index_params(self, context, index_data, index_all):
-        """Validate input params of the index() method
-        """
-        if not context:
-            raise InvalidDataException('Invalid context')
-
-        if not index_data.name:
-            raise InvalidDataException('Invalid index name')
-
-        if not index_data.type:
-            raise InvalidDataException('Invalid index document type')
-
-        # Keys are required when index_all is False
-        if not index_all and not len(index_data.keys):
-            raise InvalidDataException('Invalid index keys')
-
     def index(self, context, index_data):
         """Index data for specified keys. Use to update an existing index.
 
@@ -106,7 +90,8 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            return self._index(context, index_data, index_all=False)
+            index_action = 'UPDATE'
+            return self._index(context, index_action, index_data, index_all=False)
 
         except InvalidDataException as error:
             self.log.exception(error)
@@ -130,7 +115,8 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            return self._index(context, index_data, index_all=True)
+            index_action = 'UPDATE'
+            return self._index(context, index_action, index_data, index_all=True)
 
         except InvalidDataException as error:
             self.log.exception(error)
@@ -139,14 +125,61 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             self.log.exception(error)
             raise UnavailableException(str(error))
 
-    def _index(self, context, index_data, index_all=False):
+    def _generate_indexjob_data(self, index_data, action):
+        """Create JSON representation of the input index data
+
+        Args:
+            index_data: Thrfit IndexData object
+            action: string indicating the action the indexer should perform
+        Returns:
+            JSON formatted string which specifies all of the details of the
+            work that the IndexJob needs to perform.
+        """
+        index_data_json = json.dumps(index_data, cls=Encoder)
+        # Add the index operation to this JSON data so that the IndexJob
+        # completely specifies the work that needs to be done.
+        data = json.loads(index_data_json)
+        data['action'] = action
+        return json.dumps(data)
+
+    def _validate_index_params(self, context, index_action, index_data, index_all):
+        """Validate input params of the index() and indexAll() methods
+        Args:
+            context: String to identify calling context
+            index_data: Thrift IndexData object
+            index_all: Boolean which indicates if indexAll() was invoked
+        Returns:
+            None
+        Raises:
+            InvalidDataException if input data is invalid
+        """
+        if not context:
+            raise InvalidDataException('Invalid context')
+
+        if index_action != 'UPDATE':
+            raise InvalidDataException('Invalid index action')
+
+        if not index_data.name:
+            raise InvalidDataException('Invalid index name')
+
+        if not index_data.type:
+            raise InvalidDataException('Invalid index document type')
+
+        # Keys are required when index_all is False
+        if not index_all and not len(index_data.keys):
+            raise InvalidDataException('Invalid index keys')
+
+    def _index(self, context, index_action, index_data, index_all=False):
         """Helper function. Pulled out common code from index() & indexAll().
 
         This method creates a job to index the specified input data.
 
         Args:
             context: String to identify calling context
+            index_action: String to identify the action to perform.
+                Supported strings: 'UPDATE'
             index_data: Thrift IndexData object.
+            index_all: Boolean indicating if all keys should be indexed
         Returns:
             None
         Raises:
@@ -158,7 +191,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             db_session = self.get_database_session()
 
             # Validate inputs
-            self._validate_index_params(context, index_data, index_all)
+            self._validate_index_params(context, index_action, index_data, index_all)
 
             # If input specified a start-processing-time
             # convert it to UTC DateTime object.
@@ -167,12 +200,8 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             else:
                 processing_start_time = func.current_timestamp()
 
-            # Create JSON representation of the input index data
-            index_data_json = json.dumps(index_data, cls=Encoder)
-            # Add the index operation to this JSON data so that the IndexJob
-            # completely specifies the work that needs to be done.
-            data = json.loads(index_data_json)
-            data['action'] = 'UPDATE'
+            # Massage input data into format for IndexJob
+            data = self._generate_indexjob_data(index_data, index_action)
 
             # Create IndexJob
             job = IndexJobModel(
@@ -180,7 +209,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 context=context,
                 not_before=processing_start_time,
                 retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS,
-                data=json.dumps(data)
+                data=data
             )
             db_session.add(job)
             db_session.commit()

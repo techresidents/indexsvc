@@ -31,6 +31,7 @@ class IndexServiceTest(IntegrationTestCase):
         try:
             cls.db_session = cls.service.handler.get_database_session()
             cls.index_data = IndexData(
+                notBefore=tz.timestamp(),
                 name='users',
                 type='user',
                 keys=['1']
@@ -81,22 +82,23 @@ class IndexServiceTest(IntegrationTestCase):
             self.db_session.close()
             raise e
 
-    def _validate_indexjob_model(self, model, index_data, expected_retries_remaining):
+    def _validate_indexjob_model(self, model, index_action, index_data):
         """Encapsulate code to validate an IndexJob model.
         Args:
             model: the IndexJob model to validate
             index_data: the Thrift IndexData the model was created from
-            expected_retries_remaining: the expected number of retries remaining
         """
+        self.assertEqual(model.context, self.context)
+        self.assertEqual(model.data, self.service.handler._generate_indexjob_data(index_data, index_action))
         self.assertAlmostEqual(index_data.notBefore, tz.utc_to_timestamp(model.not_before), places=7)
         self.assertIsNotNone(model.created)
         self.assertIsNone(model.start)
         self.assertIsNone(model.end)
         self.assertIsNone(model.owner)
         self.assertIsNone(model.successful)
-        self.assertEqual(expected_retries_remaining, model.retries_remaining)
+        self.assertEqual(self.max_retry_attempts, model.retries_remaining)
 
-    def test_index_invalidData(self):
+    def test_invalidData(self):
 
         # Invalid context
         with self.assertRaises(InvalidDataException):
@@ -126,6 +128,7 @@ class IndexServiceTest(IntegrationTestCase):
         try:
             # Init models to None to avoid unnecessary cleanup on failure
             index_models = None
+            index_action = 'UPDATE'
 
             # Create & write IndexJob to db
             self.service_proxy.index(self.context, self.index_data)
@@ -134,12 +137,15 @@ class IndexServiceTest(IntegrationTestCase):
             index_job_model = self.db_session.query(IndexJobModel).\
                 filter(IndexJobModel.context==self.context).\
                 one()
-            #self._validate_indexjob_model(index_job_model)
+            self._validate_indexjob_model(
+                index_job_model,
+                index_action,
+                self.index_data)
 
             # Add model to list for cleanup
             if index_models is None:
                 index_models = []
-            #index_models.append(index_job_model)
+            index_models.append(index_job_model)
 
             # Allow processing of jobs to take place
             time.sleep(settings.INDEXER_POLL_SECONDS+30)
