@@ -18,7 +18,7 @@ class Indexer(object):
     def __init__(self, db_session_factory, job_retry_seconds):
         self.log = logging.getLogger(__name__)
         self.db_session_factory = db_session_factory
-        self.job_retry_seconds = job_retry_seconds #TODO read from settings
+        self.job_retry_seconds = job_retry_seconds
 
 
     def _retry_job(self, failed_job):
@@ -37,6 +37,7 @@ class Indexer(object):
                     created=func.current_timestamp(),
                     not_before=not_before,
                     retries_remaining=failed_job.retries_remaining-1,
+                    context=failed_job.context,
                     data=failed_job.data
                 )
                 # Add job to db
@@ -46,7 +47,7 @@ class Indexer(object):
             else:
                 self.log.info("No retries remaining for job for index_job_id=%s"\
                               % (failed_job.id))
-                self.log.error("Job for notification_job_id=%s failed!"\
+                self.log.error("Job for index_job_id=%s failed!"\
                                % (failed_job.id))
         except Exception as e:
             self.log.exception(e)
@@ -82,11 +83,11 @@ class Indexer(object):
                 pass
 
         except JobOwned:
-            # This means that the NotificationJob was claimed just before
+            # This means that the IndexJob was claimed just before
             # this thread claimed it. Stop processing the job. There's
             # no need to abort the job since no processing of the job
             # has occurred.
-            self.log.warning("Index job with job_id=%d already claimed. Stopping processing." % job.id)
+            self.log.warning("IndexJob with job_id=%d already claimed. Stopping processing." % job.id)
         except Exception as e:
             #failure during processing.
             self.log.exception(e)
