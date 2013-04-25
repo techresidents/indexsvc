@@ -75,14 +75,12 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         """Join handler."""
         join([self.thread_pool, self.job_monitor, super(IndexServiceHandler, self)], timeout)
 
-
     def _validate_index_params(self, context, index_data, index_all):
         """Validate input params of the index() method
         """
         if not context:
             raise InvalidDataException('Invalid context')
         # TODO validate index_data
-
 
     def index(self, context, index_data):
         """Index data for specified keys. Use to update an existing index.
@@ -133,7 +131,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             raise UnavailableException(str(error))
 
     def _index(self, context, index_data, index_all=False):
-        """Help function. Pulled out common code.
+        """Helper function. Pulled out common code from index() & indexAll().
 
         This method creates a job to index the specified input data.
 
