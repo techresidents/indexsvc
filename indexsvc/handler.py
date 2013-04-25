@@ -80,7 +80,16 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         """
         if not context:
             raise InvalidDataException('Invalid context')
-        # TODO validate index_data
+
+        if not index_data.name:
+            raise InvalidDataException('Invalid index name')
+
+        if not index_data.type:
+            raise InvalidDataException('Invalid index document type')
+
+        # Keys are required when index_all is False
+        if not index_all and not len(index_data.keys):
+            raise InvalidDataException('Invalid index keys')
 
     def index(self, context, index_data):
         """Index data for specified keys. Use to update an existing index.
@@ -145,11 +154,11 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            # Validate inputs
-            self._validate_index_params(context, index_data, index_all)
-
             # Get a db session
             db_session = self.get_database_session()
+
+            # Validate inputs
+            self._validate_index_params(context, index_data, index_all)
 
             # If input specified a start-processing-time
             # convert it to UTC DateTime object.
