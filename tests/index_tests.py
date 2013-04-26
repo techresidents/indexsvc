@@ -20,8 +20,7 @@ import settings
 
 
 class IndexServiceTest(IntegrationTestCase):
-    """
-        Test the Index Service interface.
+    """ Test the Index Service inteface.
     """
 
     @classmethod
@@ -140,7 +139,8 @@ class IndexServiceTest(IntegrationTestCase):
             self._validate_indexjob_model(
                 index_job_model,
                 index_action,
-                self.index_data)
+                self.index_data
+            )
 
             # Add model to list for cleanup
             if index_models is None:

@@ -179,7 +179,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             index_action: String to identify the action to perform.
                 Supported strings: 'UPDATE'
             index_data: Thrift IndexData object.
-            index_all: Boolean indicating if all keys should be indexed
+            index_all: Boolean indicating if all keys should be acted upon
         Returns:
             None
         Raises:
@@ -191,7 +191,12 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             db_session = self.get_database_session()
 
             # Validate inputs
-            self._validate_index_params(context, index_action, index_data, index_all)
+            self._validate_index_params(
+                context,
+                index_action,
+                index_data,
+                index_all
+            )
 
             # If input specified a start-processing-time
             # convert it to UTC DateTime object.
