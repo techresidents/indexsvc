@@ -14,9 +14,9 @@ from trindexsvc.gen.ttypes import UnavailableException, InvalidDataException
 
 import settings
 
-from encoder import Encoder
 from jobmonitor import IndexJobMonitor, IndexThreadPool
 from indexer import Indexer
+from indexop import IndexAction, IndexOp
 
 
 class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
@@ -82,7 +82,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         Args:
             context: String to identify calling context
-            index_data: Thrift IndexData object.
+            index_data: Thrift IndexData object
         Returns:
             None
         Raises:
@@ -90,8 +90,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            index_action = 'UPDATE'
-            return self._index(context, index_action, index_data, index_all=False)
+            return self._index(context, IndexAction.Update, index_data, index_all=False)
 
         except InvalidDataException as error:
             self.log.exception(error)
@@ -107,7 +106,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         Args:
             context: String to identify calling context
-            index_data: Thrift IndexData object.
+            index_data: Thrift IndexData object
         Returns:
             None
         Raises:
@@ -115,8 +114,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             UnavailableException for any other unexpected error.
         """
         try:
-            index_action = 'UPDATE'
-            return self._index(context, index_action, index_data, index_all=True)
+            return self._index(context, IndexAction.Update, index_data, index_all=True)
 
         except InvalidDataException as error:
             self.log.exception(error)
@@ -124,23 +122,6 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         except Exception as error:
             self.log.exception(error)
             raise UnavailableException(str(error))
-
-    def _generate_indexjob_data(self, index_data, action):
-        """Create JSON representation of the input index data
-
-        Args:
-            index_data: Thrfit IndexData object
-            action: string indicating the action the indexer should perform
-        Returns:
-            JSON formatted string which specifies all of the details of the
-            work that the IndexJob needs to perform.
-        """
-        index_data_json = json.dumps(index_data, cls=Encoder)
-        # Add the index operation to this JSON data so that the IndexJob
-        # completely specifies the work that needs to be done.
-        data = json.loads(index_data_json)
-        data['action'] = action
-        return json.dumps(data)
 
     def _validate_index_params(self, context, index_action, index_data, index_all):
         """Validate input params of the index() and indexAll() methods
@@ -156,8 +137,11 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         if not context:
             raise InvalidDataException('Invalid context')
 
-        if index_action != 'UPDATE':
+        if not index_action:
             raise InvalidDataException('Invalid index action')
+
+        if type(index_action) != IndexAction:
+            raise InvalidDataException('Invalid index action object type')
 
         if not index_data.name:
             raise InvalidDataException('Invalid index name')
@@ -176,9 +160,8 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         Args:
             context: String to identify calling context
-            index_action: String to identify the action to perform.
-                Supported strings: 'UPDATE'
-            index_data: Thrift IndexData object.
+            index_action: IndexAction object
+            index_data: Thrift IndexData object
             index_all: Boolean indicating if all keys should be acted upon
         Returns:
             None
@@ -206,7 +189,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 processing_start_time = func.current_timestamp()
 
             # Massage input data into format for IndexJob
-            data = self._generate_indexjob_data(index_data, index_action)
+            data = IndexOp(index_data, index_action)
 
             # Create IndexJob
             job = IndexJobModel(
@@ -214,7 +197,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 context=context,
                 not_before=processing_start_time,
                 retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS,
-                data=data
+                data=data.to_json()
             )
             db_session.add(job)
             db_session.commit()

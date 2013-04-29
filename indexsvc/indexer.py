@@ -3,9 +3,14 @@ import logging
 
 from sqlalchemy.sql import func
 
+from trpycore.factory.base import Factory
 from trpycore.timezone import tz
 from trsvcscore.db.models import IndexJob
 from trsvcscore.db.job import JobOwned
+
+from indexer_delegate import GenericIndexer
+from indexop import IndexOp
+
 
 class Indexer(object):
     """ Responsible for indexing documents.
@@ -26,6 +31,11 @@ class Indexer(object):
 
         This method creates a new IndexJob from a
         job that failed processing.
+
+        Args:
+            failed_job: DatabaseJob object, or objected derived from DatabaseJob
+        Returns:
+            None
         """
         try:
             db_session = None
@@ -63,6 +73,8 @@ class Indexer(object):
 
         Args:
             database_job: DatabaseJob object, or objected derived from DatabaseJob
+        Returns:
+            None
         """
         try:
             with database_job as job:
@@ -73,14 +85,12 @@ class Indexer(object):
                 # manager returns 'job' as a NotificationJob
                 # db model object.
 
-                # This is where the logic that controls which
-                # provider to use will live (e.g. email, sms, etc).
-                # For now, we only have an email provider so
-                # there's no logic needed.
+                indexop = IndexOp.from_json(job.data)
+                factory = IndexerFactory(self.db_session_factory, indexop)
+                indexer = factory.create()
+                indexer.index()
 
-                # Call into email service wrapper
                 # TODO return async object
-                pass
 
         except JobOwned:
             # This means that the IndexJob was claimed just before
@@ -92,3 +102,27 @@ class Indexer(object):
             #failure during processing.
             self.log.exception(e)
             self._retry_job(job)
+
+
+
+class IndexerFactory(Factory):
+    """Factory for creating IndexerDelegate objects."""
+
+    def __init__(self, db_session_factory, indexop):
+        """IndexerFactory constructor.
+
+        Args:
+            db_session_factory: callable returning a new sqlalchemy db session
+            indexop: IndexOp object
+        """
+        self.db_session_factory = db_session_factory
+        self.indexop = indexop
+
+    def create(self):
+        """Return instance of IndexerDelegate"""
+        # We only have a GenericIndexer right now
+        return GenericIndexer(self.db_session_factory, self.indexop)
+        # For the future, we'll return an indexer based upon the input
+        # index name and document type, like this:
+        # if self.indexop.name == 'users' and self.indexop.type == 'user':
+        #    ret = GenericIndexer(self.indexop)
