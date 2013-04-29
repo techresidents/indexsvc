@@ -78,22 +78,22 @@ class GenericIndexer(IndexerDelegate):
     its create, update, and delete methods.  It simply iterates through
     the list of specified keys and invokes the ElasticSearch client methods.
     """
-    def __init__(self, indexop):
-        super(GenericIndexer, self).__init__(indexop)
+    def __init__(self, db_session_factory, indexop):
+        super(GenericIndexer, self).__init__(db_session_factory, indexop)
         self.log = logging.getLogger(__name__)
 
         es_client = ''
         self.indexer = BulkIndex(
             es_client,
-            self.indexop.name,
-            self.indexop.type,
+            self.indexop.data.name,
+            self.indexop.data.type,
             autoflush=100
         )
 
         index_document_factory = ESDocumentFactory(
             self.db_session_factory,
-            self.indexop.name,
-            self.indexop.type
+            self.indexop.data.name,
+            self.indexop.data.type
         )
         self.document = index_document_factory.create()
 
@@ -110,26 +110,26 @@ class GenericIndexer(IndexerDelegate):
 
     def create(self):
         createdDocsList = []
-        for key in self.indexop.keys:
+        for key in self.indexop.data.keys:
             doc = self.document.generate(key)
+            #self.indexer.put(key, doc, create=True, type=self.indexop.data.type)
             createdDocsList.append(doc)
-            self.indexer.put(key, doc, create=True, type=self.indexop.type)
         self.indexer.flush()
         return createdDocsList
 
     def update(self):
         updatedDocsList = []
-        for key in self.indexop.keys:
+        for key in self.indexop.data.keys:
             doc = self.document.generate(key)
+            #self.indexer.put(key, doc, create=False, type=self.indexop.data.type)
             updatedDocsList.append(doc)
-            self.indexer.put(key, doc, create=False, type=self.indexop.type)
         self.indexer.flush()
         return updatedDocsList
 
     def delete(self):
         deletedKeysList = []
-        for key in self.indexop.keys:
-            self.indexer.delete(key, type=self.indexop.type)
+        for key in self.indexop.data.keys:
+            #self.indexer.delete(key, type=self.indexop.data.type)
             deletedKeysList.append(key)
         self.indexer.flush()
         return deletedKeysList

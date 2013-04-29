@@ -43,24 +43,19 @@ class IndexOp(object):
         return json.dumps(index_data)
 
     @staticmethod
-    def from_json(json):
+    def from_json(data):
         """ Return IndexOp object from JSON formatted string"""
-        data = json.loads(json)
-        action = data['action']
-        name = data['name']
-        type = data['type']
-        keys = data['keys']
+        data_obj = json.loads(data)
+        action = data_obj['action']
+        name = data_obj['name']
+        type = data_obj['type']
+        keys = data_obj['keys']
         return IndexOp(action, IndexData(name=name, type=type, keys=keys))
 
 
 
 class Encoder(json.JSONEncoder):
-    """Encoder to encode Thrift IndexData objects
-
-    Args:
-        action: action for the indexer to perform.
-            Supported values: 'CREATE', 'UPDATE', 'DELETE'
-    """
+    """Encoder to encode Thrift IndexData objects """
     def __init__(self, *args, **kwargs):
         super(Encoder, self).__init__(*args, **kwargs)
 

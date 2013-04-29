@@ -49,7 +49,6 @@ class ESUserDocument(ESDocument):
 
             # TODO
             # lookup key and associated data
-            # read ES schema?
             # generate ES document JSON
 
         except Exception as e:

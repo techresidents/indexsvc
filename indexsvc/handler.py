@@ -75,6 +75,16 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         """Join handler."""
         join([self.thread_pool, self.job_monitor, super(IndexServiceHandler, self)], timeout)
 
+    # For Future:
+    # def create(self, context, index_data):
+    #     return self._index(context, IndexAction.Create, index_data, index_all=False)
+    #
+    # def delete(self, context, index_data):
+    #     return self._index(context, IndexAction.Delete, index_data, index_all=False)
+    #
+    # def deleteAll(self, context, index_data):
+    #     return self._index(context, IndexAction.Delete, index_data, index_all=True)
+
     def index(self, context, index_data):
         """Index data for specified keys. Use to update an existing index.
 
@@ -94,7 +104,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         except InvalidDataException as error:
             self.log.exception(error)
-            raise InvalidDataException()
+            raise InvalidDataException(str(error))
         except Exception as error:
             self.log.exception(error)
             raise UnavailableException(str(error))
@@ -140,8 +150,10 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
         if not index_action:
             raise InvalidDataException('Invalid index action')
 
-        if type(index_action) != IndexAction:
-            raise InvalidDataException('Invalid index action object type')
+        if (index_action != IndexAction.Create and
+            index_action != IndexAction.Update and
+            index_action != IndexAction.Delete):
+            raise InvalidDataException('Invalid index action')
 
         if not index_data.name:
             raise InvalidDataException('Invalid index name')
@@ -189,7 +201,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 processing_start_time = func.current_timestamp()
 
             # Massage input data into format for IndexJob
-            data = IndexOp(index_data, index_action)
+            data = IndexOp(action=index_action, data=index_data)
 
             # Create IndexJob
             job = IndexJobModel(

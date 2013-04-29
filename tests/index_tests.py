@@ -14,6 +14,7 @@ from trindexsvc.gen.ttypes import IndexData, UnavailableException, InvalidDataEx
 from trpycore.timezone import tz
 from trsvcscore.db.models import IndexJob as IndexJobModel
 
+from indexop import IndexAction, IndexOp
 from testbase import IntegrationTestCase
 
 import settings
@@ -85,10 +86,11 @@ class IndexServiceTest(IntegrationTestCase):
         """Encapsulate code to validate an IndexJob model.
         Args:
             model: the IndexJob model to validate
+            index_action: IndexAction object
             index_data: the Thrift IndexData the model was created from
         """
         self.assertEqual(model.context, self.context)
-        self.assertEqual(model.data, self.service.handler._generate_indexjob_data(index_data, index_action))
+        self.assertEqual(model.data, IndexOp(index_action, index_data).to_json())
         self.assertAlmostEqual(index_data.notBefore, tz.utc_to_timestamp(model.not_before), places=7)
         self.assertIsNotNone(model.created)
         self.assertIsNone(model.start)
@@ -122,12 +124,10 @@ class IndexServiceTest(IntegrationTestCase):
             self.service_proxy.index(self.context, invalid_index_data)
 
     def test_index(self):
-        """Simple test case.
-        """
+        """Simple test case."""
         try:
             # Init models to None to avoid unnecessary cleanup on failure
             index_models = None
-            index_action = 'UPDATE'
 
             # Create & write IndexJob to db
             self.service_proxy.index(self.context, self.index_data)
@@ -138,7 +138,7 @@ class IndexServiceTest(IntegrationTestCase):
                 one()
             self._validate_indexjob_model(
                 index_job_model,
-                index_action,
+                IndexAction.Update,
                 self.index_data
             )
 

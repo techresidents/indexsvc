@@ -25,6 +25,6 @@ class ESDocumentFactory(Factory):
             Returns None for unsupported name/type combinations.
         """
         ret = None
-        if self.name == 'users' and type == 'user':
+        if self.name == 'users' and self.type == 'user':
             ret = ESUserDocument(self.db_session_factory, self.name, self.type)
         return ret

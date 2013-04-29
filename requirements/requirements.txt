@@ -4,7 +4,7 @@ SQLAlchemy==0.7.6
 thrift==0.8.0
 
 git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/zookeeper.git@3.3.5#egg=zookeeper
-git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trpycore.git@0.8.0#egg=trpycore
+git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trpycore.git@integration#egg=trpycore
 git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/tres.git@integration#egg=tres
 git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trhttp.git@integration#egg=trhttp
 git+ssh://dev.techresidents.com/tr/repos/techresidents/services/core/python/trsvcscore.git@integration#egg=trsvcscore

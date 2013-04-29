@@ -84,7 +84,6 @@ class Indexer(object):
                 # specify how to process the job. The context
                 # manager returns 'job' as a NotificationJob
                 # db model object.
-
                 indexop = IndexOp.from_json(job.data)
                 factory = IndexerFactory(self.db_session_factory, indexop)
                 indexer = factory.create()
