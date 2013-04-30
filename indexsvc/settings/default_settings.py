@@ -23,12 +23,17 @@ DATABASE_CONNECTION = "postgresql+psycopg2://%s:%s@/%s?host=%s" % (DATABASE_USER
 #Zookeeper settings
 ZOOKEEPER_HOSTS = ["localdev:2181"]
 
-#Notification svc settings
+#Index svc settings
 INDEXER_THREADS = 1
 INDEXER_POOL_SIZE = 1
 INDEXER_POLL_SECONDS = 60
 INDEXER_JOB_RETRY_SECONDS = 300
 INDEXER_JOB_MAX_RETRY_ATTEMPTS = 3
+
+#ElasticSearch settings
+ELASTICSEARCH_PORT = 9200
+ELASTICSEARCH_CONNECTION = "http://%s:%s" % (DATABASE_HOST, ELASTICSEARCH_PORT)
+ELASTICSEARCH_POOL_SIZE = 1
 
 #Logging settings
 LOGGING = {

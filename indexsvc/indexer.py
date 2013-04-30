@@ -18,12 +18,14 @@ class Indexer(object):
     Args:
         db_session_factory: callable returning a new sqlalchemy db session
         job_retry_seconds: number of seconds delay between job retries
+        index_client_pool: pool of index client objects
     """
 
-    def __init__(self, db_session_factory, job_retry_seconds):
+    def __init__(self, db_session_factory, job_retry_seconds, index_client_pool):
         self.log = logging.getLogger(__name__)
         self.db_session_factory = db_session_factory
         self.job_retry_seconds = job_retry_seconds
+        self.index_client_pool = index_client_pool
 
 
     def _retry_job(self, failed_job):
@@ -85,7 +87,11 @@ class Indexer(object):
                 # manager returns 'job' as a NotificationJob
                 # db model object.
                 indexop = IndexOp.from_json(job.data)
-                factory = IndexerFactory(self.db_session_factory, indexop)
+                factory = IndexerFactory(
+                    self.db_session_factory,
+                    self.index_client_pool,
+                    indexop
+                )
                 indexer = factory.create()
                 indexer.index()
 
@@ -107,7 +113,7 @@ class Indexer(object):
 class IndexerFactory(Factory):
     """Factory for creating IndexerDelegate objects."""
 
-    def __init__(self, db_session_factory, indexop):
+    def __init__(self, db_session_factory, index_client_pool, indexop):
         """IndexerFactory constructor.
 
         Args:
@@ -115,12 +121,17 @@ class IndexerFactory(Factory):
             indexop: IndexOp object
         """
         self.db_session_factory = db_session_factory
+        self.index_client_pool = index_client_pool
         self.indexop = indexop
 
     def create(self):
         """Return instance of IndexerDelegate"""
+        return GenericIndexer(
+            self.db_session_factory,
+            self.index_client_pool,
+            self.indexop
+        )
         # We only have a GenericIndexer right now
-        return GenericIndexer(self.db_session_factory, self.indexop)
         # For the future, we'll return an indexer based upon the input
         # index name and document type, like this:
         # if self.indexop.name == 'users' and self.indexop.type == 'user':

@@ -1,6 +1,6 @@
 from trpycore.factory.base import Factory
 
-from document import ESUserDocument
+from users import ESUserDocument
 
 class ESDocumentFactory(Factory):
     """Factory for creating ElasticSearch Document objects."""
@@ -26,5 +26,5 @@ class ESDocumentFactory(Factory):
         """
         ret = None
         if self.name == 'users' and self.type == 'user':
-            ret = ESUserDocument(self.db_session_factory, self.name, self.type)
+            ret = ESUserDocument(self.db_session_factory)
         return ret

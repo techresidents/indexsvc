@@ -1,8 +1,6 @@
 import abc
 import logging
 
-from tres.index import BulkIndex
-
 from documents.es.factory import ESDocumentFactory
 from indexop import IndexAction
 
@@ -16,14 +14,16 @@ class IndexerDelegate(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, db_session_factory, indexop):
+    def __init__(self, db_session_factory, index_client_pool, indexop):
         """IndexerDelegate constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
+            index_client_pool: Pool of index client objects
             indexop: IndexOp object
         """
         self.db_session_factory = db_session_factory
+        self.index_client_pool = index_client_pool
         self.indexop = indexop
 
     @abc.abstractmethod
@@ -66,7 +66,6 @@ class IndexerDelegate(object):
         return
 
 
-
 class GenericIndexer(IndexerDelegate):
     """ Generic Indexer
 
@@ -78,17 +77,9 @@ class GenericIndexer(IndexerDelegate):
     its create, update, and delete methods.  It simply iterates through
     the list of specified keys and invokes the ElasticSearch client methods.
     """
-    def __init__(self, db_session_factory, indexop):
-        super(GenericIndexer, self).__init__(db_session_factory, indexop)
+    def __init__(self, db_session_factory, index_client_pool, indexop):
+        super(GenericIndexer, self).__init__(db_session_factory, index_client_pool, indexop)
         self.log = logging.getLogger(__name__)
-
-        es_client = ''
-        self.indexer = BulkIndex(
-            es_client,
-            self.indexop.data.name,
-            self.indexop.data.type,
-            autoflush=100
-        )
 
         index_document_factory = ESDocumentFactory(
             self.db_session_factory,
@@ -96,6 +87,14 @@ class GenericIndexer(IndexerDelegate):
             self.indexop.data.type
         )
         self.document = index_document_factory.create()
+
+        # Get ES Client
+        with self.index_client_pool.get() as es_client:
+            self.indexer = es_client.get_bulk_index(
+                self.indexop.data.name,
+                self.indexop.data.type,
+                autoflush=20
+            )
 
 
     def index(self):
@@ -110,26 +109,26 @@ class GenericIndexer(IndexerDelegate):
 
     def create(self):
         createdDocsList = []
-        for key in self.indexop.data.keys:
-            doc = self.document.generate(key)
-            #self.indexer.put(key, doc, create=True, type=self.indexop.data.type)
-            createdDocsList.append(doc)
-        self.indexer.flush()
+        with self.indexer.flushing():
+            for key in self.indexop.data.keys:
+                doc = self.document.generate(key)
+                #self.indexer.put(key, doc, create=True)
+                createdDocsList.append(doc)
         return createdDocsList
 
     def update(self):
         updatedDocsList = []
-        for key in self.indexop.data.keys:
-            doc = self.document.generate(key)
-            #self.indexer.put(key, doc, create=False, type=self.indexop.data.type)
-            updatedDocsList.append(doc)
-        self.indexer.flush()
+        with self.indexer.flushing():
+            for key in self.indexop.data.keys:
+                doc = self.document.generate(key)
+                self.indexer.put(key, doc, create=False)
+                updatedDocsList.append(doc)
         return updatedDocsList
 
     def delete(self):
         deletedKeysList = []
-        for key in self.indexop.data.keys:
-            #self.indexer.delete(key, type=self.indexop.data.type)
-            deletedKeysList.append(key)
-        self.indexer.flush()
+        with self.indexer.flushing():
+            for key in self.indexop.data.keys:
+                #self.indexer.delete(key)
+                deletedKeysList.append(key)
         return deletedKeysList

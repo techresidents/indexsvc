@@ -3,6 +3,8 @@ import logging
 
 from sqlalchemy.sql import func
 
+from tres.client import ESClient
+from tres.pool import ESClientPool
 from trpycore.factory.base import Factory
 from trpycore.pool.queue import QueuePool
 from trpycore.thread.util import join
@@ -36,12 +38,20 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         self.log = logging.getLogger("%s.%s" % (__name__, IndexServiceHandler.__name__))
 
-        # Create pool of Indexer objects which will do the
-        # actual work of indexing.
+        # Create factory to return ElasticSearch clients
+        def es_client_factory():
+            return ESClient(settings.ELASTICSEARCH_CONNECTION)
+        self.es_client_pool = ESClientPool(
+            es_client_factory=Factory(es_client_factory),
+            size=settings.ELASTICSEARCH_POOL_SIZE
+        )
+
+        # Create factory to return Indexers which perform actual indexing
         def indexer_factory():
             return Indexer(
                 db_session_factory=self.get_database_session,
-                job_retry_seconds=settings.INDEXER_JOB_RETRY_SECONDS
+                job_retry_seconds=settings.INDEXER_JOB_RETRY_SECONDS,
+                index_client_pool=self.es_client_pool
             )
         self.indexer_pool = QueuePool(
             size=settings.INDEXER_POOL_SIZE,

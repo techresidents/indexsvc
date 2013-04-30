@@ -10,15 +10,11 @@ class ESDocument(object):
 
     Args:
         db_session_factory: callable returning a new sqlalchemy db session
-        name: index name
-        type: document type
     """
 
-    def __init__(self, db_session_factory, name, type):
+    def __init__(self, db_session_factory):
         self.log = logging.getLogger(__name__)
         self.db_session_factory = db_session_factory
-        self.name = name
-        self.type = type
 
     def generate(self, key):
         """ Generate JSON document
@@ -35,26 +31,3 @@ class ESDocument(object):
 
         """
         pass
-
-
-class ESUserDocument(ESDocument):
-    """ Responsible for generating an ElasticSearch user document"""
-
-    def __init__(self, db_session_factory, name, type):
-        super(ESUserDocument, self).__init__(db_session_factory, name, type)
-
-    def generate(self, key):
-        try:
-            db_session = self.db_session_factory()
-
-            # TODO
-            # lookup key and associated data
-            # generate ES document JSON
-
-        except Exception as e:
-            self.log.exception(e)
-            if db_session:
-                db_session.rollback()
-        finally:
-            if db_session:
-                db_session.close()
