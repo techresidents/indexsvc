@@ -1,0 +1,57 @@
+{ 
+  "mappings": {
+    "user": {
+      "properties": {
+        "joined": {
+            "type": "date"
+        },
+        "skills" : {
+          "properties" : {
+            "name" : {
+              "type": "multi_field",
+              "fields": {
+                "name": {"type": "string"},
+                 "raw": {"type": "string", "index": "not_analyzed"}
+                }
+            }
+          }
+        },
+        "location_prefs" : {
+          "properties" : {
+            "name" : {
+              "type": "multi_field",
+              "fields": {
+                "city": {"type": "string"},
+                 "raw": {"type": "string", "index": "not_analyzed"}
+                }
+            }
+          }
+        },
+        "position_prefs" : {
+          "properties" : {
+            "type" : {
+              "type": "multi_field",
+              "fields": {
+                "type": {"type": "string"},
+                 "raw": {"type": "string", "index": "not_analyzed"}
+                }
+            }
+          }
+        },
+        "technology_prefs" : {
+          "properties" : {
+            "name" : {
+              "type": "multi_field",
+              "fields": {
+                "name": {"type": "string"},
+                 "raw": {"type": "string", "index": "not_analyzed"}
+                }
+            }
+          }
+        }
+
+
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "id": 1,
+    "skills": [
+        { "id": 100, "name": "Java" },
+        { "id": 101, "name": "Python" },
+        { "id": 102, "name": "Android SKD" }
+    ],
+    "technology_prefs": [
+        { "id": 201, "name": "Python" },
+        { "id": 202, "name": "C++" }
+    ],
+    "location_prefs": [
+        { "id": 301, "city": "Boston" },
+        { "id": 302, "city": "San Francisco" }
+    ],
+    "position_prefs": [
+        { "id": 401, "type": "Senior Developer" }
+    ],
+    "yrs_experience": 10,
+    "joined": "2013-04-24T23:02:07.407050+00:00",
+    "score": 2.7
+}
