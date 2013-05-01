@@ -112,7 +112,9 @@ class GenericIndexer(IndexerDelegate):
         with self.indexer.flushing():
             for key in self.indexop.data.keys:
                 doc = self.document.generate(key)
-                #self.indexer.put(key, doc, create=True)
+                # setting create=True flag means that the index operation will
+                # fail if the document already exists
+                self.indexer.put(key, doc, create=True)
                 createdDocsList.append(doc)
         return createdDocsList
 
@@ -121,6 +123,9 @@ class GenericIndexer(IndexerDelegate):
         with self.indexer.flushing():
             for key in self.indexop.data.keys:
                 doc = self.document.generate(key)
+                # setting create=False means that the index operation will
+                # succeed if the document already exists.  It also means that
+                # the document *will be* created if it doesn't already exist.
                 self.indexer.put(key, doc, create=False)
                 updatedDocsList.append(doc)
         return updatedDocsList
@@ -129,6 +134,6 @@ class GenericIndexer(IndexerDelegate):
         deletedKeysList = []
         with self.indexer.flushing():
             for key in self.indexop.data.keys:
-                #self.indexer.delete(key)
+                self.indexer.delete(key)
                 deletedKeysList.append(key)
         return deletedKeysList

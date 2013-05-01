@@ -96,19 +96,45 @@ class ESUser(object):
         }
 
     def add_skill(self, skill):
-        skill_dict = {'id': skill.id, 'name': skill.technology.name}
+        skill_dict = {
+            'id': skill.id,
+            'name': skill.technology.name,
+            'yrs_experience': skill.yrs_experience,
+            'technology_id': skill.technology.id,
+            'expertise_type_id': skill.expertise_type.id,
+            'expertise_type': skill.expertise_type.name
+        }
         self.skills.append(skill_dict)
 
     def add_location_pref(self, location_pref):
-        location_pref_dict = {'id': location_pref.location.id, 'city': location_pref.location.city}
+        city = location_pref.location.city
+        state = location_pref.location.state
+        city_state = city + ', ' + state
+        location_pref_dict = {
+            'id': location_pref.id,
+            'location_id': location_pref.location.id,
+            'city': city,
+            'state': state,
+            'name': city_state if city else state
+        }
         self.location_prefs.append(location_pref_dict)
 
     def add_technology_pref(self, technology_pref):
-        technology_pref_dict = {'id': technology_pref.technology.id, 'name': technology_pref.technology.name}
+        technology_pref_dict = {
+            'id': technology_pref.id,
+            'name': technology_pref.technology.name,
+            'technology_id': technology_pref.technology.id
+        }
         self.technology_prefs.append(technology_pref_dict)
 
     def add_position_pref(self, position_pref):
-        position_pref_dict = {'id': position_pref.position_type.id, 'type': position_pref.position_type.name}
+        position_pref_dict = {
+            'id': position_pref.id,
+            'type': position_pref.position_type.name,
+            'type_id': position_pref.position_type.id,
+            'salary_start': position_pref.salary_start,
+            'salary_end': position_pref.salary_end
+        }
         self.position_prefs.append(position_pref_dict)
 
     def set_yrs_experience(self, yrs):
