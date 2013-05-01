@@ -52,9 +52,17 @@ class ESUserDocument(ESDocument):
                 es_user.add_technology_pref(technology_pref)
             for position_pref in position_prefs:
                 es_user.add_position_pref(position_pref)
+            # Calculate total yrs experience
             if developer_profile.developer_since:
                 current_year = datetime.now().year
                 yrs_experience = current_year - developer_profile.developer_since.year
+                es_user.set_yrs_experience(yrs_experience)
+            else:
+                # Derive total yrs experience from the skill with the most yrs
+                yrs_experience = None
+                for skill in es_user.skills:
+                    if skill['yrs_experience'] > yrs_experience:
+                        yrs_experience = skill['yrs_experience']
                 es_user.set_yrs_experience(yrs_experience)
 
             return es_user.to_json()
