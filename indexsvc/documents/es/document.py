@@ -20,14 +20,14 @@ class ESDocument(object):
         """ Generate JSON document
 
         Sub-classes should override this method which encapsulates the
-        code to lookup data from our db (based upon the input key)
-        and return a JSON formatted string that can be indexed.
+        code to lookup data from our db (based upon the input key parameter)
+        and returns a JSON dictionary.
 
         Args:
             key: db key
 
         Returns:
-            JSON formatted string which can be indexed
+            JSON dictionary
 
         """
         pass

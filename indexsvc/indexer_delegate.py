@@ -10,7 +10,7 @@ class IndexerDelegate(object):
 
     Base class for concrete IndexerDelegate implementations.
     The concrete class is responsible for doing the actual
-    work of indexing data.
+    work of indexing data and communicating with the index.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -74,13 +74,21 @@ class GenericIndexer(IndexerDelegate):
     dynamically based upon the provided index name and document type.
 
     This IndexerDelegate subclass has no special functionality in
-    its create, update, and delete methods.  It simply iterates through
-    the list of specified keys and invokes the ElasticSearch client methods.
+    its create(), update(), and delete() methods.  It simply iterates through
+    the list of specified keys and invokes the ElasticSearch client.
     """
     def __init__(self, db_session_factory, index_client_pool, indexop):
+        """ GenericIndexer Constructor
+
+         Args:
+            db_session_factory: callable returning a new sqlalchemy db session
+            index_client_pool: pool of index client objects
+            indexop: IndexOp object
+        """
         super(GenericIndexer, self).__init__(db_session_factory, index_client_pool, indexop)
         self.log = logging.getLogger(__name__)
 
+        # Get ESDocument
         index_document_factory = ESDocumentFactory(
             self.db_session_factory,
             self.indexop.data.name,
@@ -88,14 +96,13 @@ class GenericIndexer(IndexerDelegate):
         )
         self.document = index_document_factory.create()
 
-        # Get ES Client
+        # Get ESClient
         with self.index_client_pool.get() as es_client:
             self.indexer = es_client.get_bulk_index(
                 self.indexop.data.name,
                 self.indexop.data.type,
                 autoflush=20
             )
-
 
     def index(self):
         if self.indexop.action == IndexAction.Create:

@@ -18,7 +18,7 @@ class ESUserDocument(ESDocument):
         Args:
             key: user db key
         Returns:
-            JSON document that is consumable by ESClient
+            JSON dictionary
         """
         try:
             # lookup user and associated data
@@ -81,6 +81,12 @@ class ESUser(object):
     """ESUser holds all of the data needed to generate the ESUserDocument JSON
     """
     def __init__(self, id, date_joined):
+        """ESUser Constructor
+
+        Args:
+            id: user db ID
+            date_jointed: date object that reps when user joined TechResidents
+        """
         self.id = id
         self.joined = date_joined
         self.skills = []
@@ -104,6 +110,13 @@ class ESUser(object):
         }
 
     def add_skill(self, skill):
+        """add_skill
+
+         Args:
+            skill: SQLAlchemy Skill object
+        Returns:
+            None
+        """
         skill_dict = {
             'id': skill.id,
             'name': skill.technology.name,
@@ -115,6 +128,13 @@ class ESUser(object):
         self.skills.append(skill_dict)
 
     def add_location_pref(self, location_pref):
+        """add_location_pref
+
+         Args:
+            skill: SQLAlchemy JobLocationPref object
+        Returns:
+            None
+        """
         city = location_pref.location.city
         state = location_pref.location.state
         city_state = city + ', ' + state
@@ -128,6 +148,13 @@ class ESUser(object):
         self.location_prefs.append(location_pref_dict)
 
     def add_technology_pref(self, technology_pref):
+        """add_technology_pref
+
+         Args:
+            skill: SQLAlchemy JobTechnologyPref object
+        Returns:
+            None
+        """
         technology_pref_dict = {
             'id': technology_pref.id,
             'name': technology_pref.technology.name,
@@ -136,6 +163,13 @@ class ESUser(object):
         self.technology_prefs.append(technology_pref_dict)
 
     def add_position_pref(self, position_pref):
+        """add_position_pref
+
+         Args:
+            skill: SQLAlchemy JobPositionPref object
+        Returns:
+            None
+        """
         position_pref_dict = {
             'id': position_pref.id,
             'type': position_pref.position_type.name,
@@ -146,4 +180,11 @@ class ESUser(object):
         self.position_prefs.append(position_pref_dict)
 
     def set_yrs_experience(self, yrs):
+        """set_yrs_experience
+
+        Args:
+            yrs: number of yrs experience
+        Returns:
+            None
+        """
         self.yrs_experience = yrs

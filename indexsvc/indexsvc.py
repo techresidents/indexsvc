@@ -51,7 +51,6 @@ def main(argv):
 
         with pidfile(settings.SERVICE_PID_FILE, create_directory=True):
 
-
             #Create service
             service = IndexService()
 

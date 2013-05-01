@@ -5,7 +5,7 @@ from trindexsvc.gen.ttypes import IndexData
 
 
 class IndexAction:
-    """ Class to represent allowed index operations."""
+    """ Class to represent allowed index actions."""
     Create, Update, Delete = range(3)
 
 
@@ -18,13 +18,17 @@ class IndexOp(object):
         name: <index name>
         type: <document type>
         keys: <list of keys to perform index operation on>
+              If keys is empty, the index action is to be performed on the
+              entire index.
     }
-
-    Args:
-        action: IndexAction enum
-        data: Thrift IndexData object
     """
     def __init__(self, action, data):
+        """Constructor
+
+        Args:
+            action: IndexAction enum
+            data: Thrift IndexData object
+        """
         self.log = logging.getLogger(__name__)
         self.action = action
         self.data = data
@@ -33,7 +37,7 @@ class IndexOp(object):
         """ Return IndexOp as JSON formatted string"""
 
         # Grab only the pertinent info from the input Thrift IndexData obj.
-        # Note that this doesn't include the index operation.
+        # Note that this doesn't include the index action.
         index_data_json = json.dumps(self.data, cls=Encoder)
 
         # Add the index action to this JSON data so that this object

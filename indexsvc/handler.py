@@ -1,4 +1,3 @@
-import json
 import logging
 
 from sqlalchemy.sql import func
@@ -88,10 +87,10 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
     # For Future:
     # def create(self, context, index_data):
     #     return self._index(context, IndexAction.Create, index_data, index_all=False)
-    #
+    # def createAll(self, context, index_data):
+    #     return self._index(context, IndexAction.Create, index_data, index_all=True)
     # def delete(self, context, index_data):
     #     return self._index(context, IndexAction.Delete, index_data, index_all=False)
-    #
     # def deleteAll(self, context, index_data):
     #     return self._index(context, IndexAction.Delete, index_data, index_all=True)
 

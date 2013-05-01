@@ -46,11 +46,11 @@ class Indexer(object):
             if failed_job.retries_remaining > 0:
                 not_before = tz.utcnow() + datetime.timedelta(seconds=self.job_retry_seconds)
                 new_job = IndexJob(
+                    data=failed_job.data,
+                    context=failed_job.context,
                     created=func.current_timestamp(),
                     not_before=not_before,
-                    retries_remaining=failed_job.retries_remaining-1,
-                    context=failed_job.context,
-                    data=failed_job.data
+                    retries_remaining=failed_job.retries_remaining-1
                 )
                 # Add job to db
                 db_session = self.db_session_factory()
@@ -84,7 +84,7 @@ class Indexer(object):
                 # Claiming the job and finishing the job are
                 # handled by this context manager. Here, we
                 # specify how to process the job. The context
-                # manager returns 'job' as a NotificationJob
+                # manager returns 'job' as an IndexJob
                 # db model object.
                 indexop = IndexOp.from_json(job.data)
                 factory = IndexerFactory(
@@ -95,7 +95,7 @@ class Indexer(object):
                 indexer = factory.create()
                 indexer.index()
 
-                # TODO return async object
+                # TODO return async object? (Copied from notification svc comment)
 
         except JobOwned:
             # This means that the IndexJob was claimed just before
@@ -118,6 +118,7 @@ class IndexerFactory(Factory):
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
+            index_client_pool: pool of index client objects
             indexop: IndexOp object
         """
         self.db_session_factory = db_session_factory
