@@ -40,10 +40,10 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
 
         # Create factory to return ElasticSearch clients
         def es_client_factory():
-            return ESClient(settings.ELASTICSEARCH_CONNECTION)
+            return ESClient(settings.ES_ENDPOINT)
         self.es_client_pool = ESClientPool(
             es_client_factory=Factory(es_client_factory),
-            size=settings.ELASTICSEARCH_POOL_SIZE
+            size=settings.ES_POOL_SIZE
         )
 
         # Create factory to return Indexers which perform actual indexing
