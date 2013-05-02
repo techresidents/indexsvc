@@ -1,9 +1,9 @@
 import logging
 
 
-class ESDocument(object):
-    """ESDocument objects are responsible for knowing how to fetch
-    needed data from our db and generate corresponding ES documents.
+class ESDocumentFactory(object):
+    """ESDocumentFactory objects are responsible for knowing how to fetch
+    needed data from the db and generate corresponding ES JSON dicts.
 
     This class is designed to be used as a base class. Derived classes are
     responsible for overriding the generate() method.
@@ -17,11 +17,11 @@ class ESDocument(object):
         self.db_session_factory = db_session_factory
 
     def generate(self, key):
-        """ Generate JSON document
+        """ Generate an ES document (a JSON dictionary that is consumable by ES)
 
         Sub-classes should override this method which encapsulates the
         code to lookup data from our db (based upon the input key parameter)
-        and returns a JSON dictionary.
+        and return a JSON dictionary.
 
         Args:
             key: db key

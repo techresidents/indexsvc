@@ -1,7 +1,7 @@
 import abc
 import logging
 
-from documents.es.factory import ESDocumentFactory
+from documents.es.factory import ESFactory
 from indexop import IndexAction
 
 
@@ -88,13 +88,14 @@ class GenericIndexer(IndexerDelegate):
         super(GenericIndexer, self).__init__(db_session_factory, index_client_pool, indexop)
         self.log = logging.getLogger(__name__)
 
-        # Get ESDocument
-        index_document_factory = ESDocumentFactory(
+        # Get ESDocumentFactory
+        es_factory = ESFactory(
             self.db_session_factory,
             self.indexop.data.name,
             self.indexop.data.type
         )
-        self.document = index_document_factory.create()
+        # es_factory returns an ESDocumentFactory instance
+        self.document_factory = es_factory.create()
 
         # Get ESClient
         with self.index_client_pool.get() as es_client:
@@ -118,7 +119,7 @@ class GenericIndexer(IndexerDelegate):
         createdDocsList = []
         with self.indexer.flushing():
             for key in self.indexop.data.keys:
-                doc = self.document.generate(key)
+                doc = self.document_factory.generate(key)
                 # setting create=True flag means that the index operation will
                 # fail if the document already exists
                 self.indexer.put(key, doc, create=True)
@@ -129,7 +130,7 @@ class GenericIndexer(IndexerDelegate):
         updatedDocsList = []
         with self.indexer.flushing():
             for key in self.indexop.data.keys:
-                doc = self.document.generate(key)
+                doc = self.document_factory.generate(key)
                 # setting create=False means that the index operation will
                 # succeed if the document already exists.  It also means that
                 # the document *will be* created if it doesn't already exist.

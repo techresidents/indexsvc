@@ -3,14 +3,19 @@ from datetime import datetime
 from trsvcscore.db.models import User, DeveloperProfile, Skill, \
     JobLocationPref, JobTechnologyPref, JobPositionTypePref
 
-from document import ESDocument
+from document import ESDocumentFactory
 
 
-class ESUserDocument(ESDocument):
-    """ ESUserDocument is responsible for generating an ElasticSearch user document"""
+class ESUserDocumentFactory(ESDocumentFactory):
+    """ ESUserDocumentFactory is responsible for generating an ElasticSearch user document
+
+    This class is responsible for fetching all needed data from the db
+    based upon the input key parameter, and returning a JSON dict that
+    can be indexed by ES.
+    """
 
     def __init__(self, db_session_factory):
-        super(ESUserDocument, self).__init__(db_session_factory)
+        super(ESUserDocumentFactory, self).__init__(db_session_factory)
 
     def generate(self, key):
         """Generates a JSON dict that can be indexed by ES
@@ -43,7 +48,7 @@ class ESUserDocument(ESDocument):
                 all()
 
             # generate ES document JSON
-            es_user = ESUser(user.id, user.date_joined)
+            es_user = ESUserDocument(user.id, user.date_joined)
             for skill in skills:
                 es_user.add_skill(skill)
             for location_pref in location_prefs:
@@ -77,11 +82,11 @@ class ESUserDocument(ESDocument):
 
 
 
-class ESUser(object):
-    """ESUser holds all of the data needed to generate the ESUserDocument JSON
+class ESUserDocument(object):
+    """ESUserDocument holds all of the data needed to generate the ESUserDocument JSON
     """
     def __init__(self, id, date_joined):
-        """ESUser Constructor
+        """ESUserDocument Constructor
 
         Args:
             id: user db ID
