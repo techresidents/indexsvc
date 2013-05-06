@@ -89,15 +89,13 @@ class Indexer(object):
                 indexop = IndexOp.from_json(job.data)
                 factory = IndexerDelegateFactory(
                     self.db_session_factory,
-                    self.index_client_pool
-                )
-                indexer_delegate = factory.create(
+                    self.index_client_pool,
                     indexop.data.name,
                     indexop.data.type
                 )
+                indexer_delegate = factory.create()
                 indexer_delegate.index(indexop)
-
-                # TODO return async object? (Copied from notification svc comment)
+                # TODO return async object
 
         except JobOwned:
             # This means that the IndexJob was claimed just before
@@ -115,17 +113,21 @@ class Indexer(object):
 class IndexerDelegateFactory(Factory):
     """Factory for creating IndexerDelegate objects."""
 
-    def __init__(self, db_session_factory, index_client_pool):
+    def __init__(self, db_session_factory, index_client_pool, index_name, doc_type):
         """IndexerFactory constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
             index_client_pool: pool of index client objects
+            index_name: index name
+            doc_type: document type
         """
         self.db_session_factory = db_session_factory
         self.index_client_pool = index_client_pool
+        self.index_name = index_name
+        self.doc_type = doc_type
 
-    def create(self, index_name, doc_type):
+    def create(self):
         """Return instance of IndexerDelegate"""
         return GenericIndexer(
             self.db_session_factory,

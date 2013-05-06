@@ -60,16 +60,15 @@ class GenericIndexer(IndexerDelegate):
 
 
     def index(self, indexop):
-
+        # es_factory returns an ESDocumentFactory instance
         es_factory = ESFactory(
             self.db_session_factory,
             indexop.data.name,
             indexop.data.type
         )
-        # es_factory returns an ESDocumentFactory instance
         document_factory = es_factory.create()
 
-        # Get ESClient
+        # Get an ESClient and perform indexing
         with self.index_client_pool.get() as es_client:
             # get bulk index
             index = es_client.get_bulk_index(
