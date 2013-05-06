@@ -87,13 +87,15 @@ class Indexer(object):
                 # manager returns 'job' as an IndexJob
                 # db model object.
                 indexop = IndexOp.from_json(job.data)
-                factory = IndexerFactory(
+                factory = IndexerDelegateFactory(
                     self.db_session_factory,
-                    self.index_client_pool,
-                    indexop
+                    self.index_client_pool
                 )
-                indexer = factory.create()
-                indexer.index()
+                indexer_delegate = factory.create(
+                    indexop.data.name,
+                    indexop.data.type
+                )
+                indexer_delegate.index(indexop)
 
                 # TODO return async object? (Copied from notification svc comment)
 
@@ -110,30 +112,27 @@ class Indexer(object):
 
 
 
-class IndexerFactory(Factory):
+class IndexerDelegateFactory(Factory):
     """Factory for creating IndexerDelegate objects."""
 
-    def __init__(self, db_session_factory, index_client_pool, indexop):
+    def __init__(self, db_session_factory, index_client_pool):
         """IndexerFactory constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
             index_client_pool: pool of index client objects
-            indexop: IndexOp object
         """
         self.db_session_factory = db_session_factory
         self.index_client_pool = index_client_pool
-        self.indexop = indexop
 
-    def create(self):
+    def create(self, index_name, doc_type):
         """Return instance of IndexerDelegate"""
         return GenericIndexer(
             self.db_session_factory,
-            self.index_client_pool,
-            self.indexop
+            self.index_client_pool
         )
-        # We only have a GenericIndexer right now
+        # We only have a GenericIndexer right now, so return that.
         # For the future, we'll return an indexer based upon the input
         # index name and document type, like this:
-        # if self.indexop.name == 'users' and self.indexop.type == 'user':
-        #    ret = GenericIndexer(self.indexop)
+        # if index_name == 'users' and doc_type == 'user':
+        #    ret = GenericIndexer()

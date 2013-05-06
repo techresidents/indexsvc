@@ -14,54 +14,25 @@ class IndexerDelegate(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, db_session_factory, index_client_pool, indexop):
+    def __init__(self, db_session_factory, index_client_pool):
         """IndexerDelegate constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
             index_client_pool: Pool of index client objects
-            indexop: IndexOp object
         """
         self.db_session_factory = db_session_factory
         self.index_client_pool = index_client_pool
-        self.indexop = indexop
 
     @abc.abstractmethod
-    def index(self):
+    def index(self, indexop):
         """ Perform indexing.
 
-        This method will invoke create(), update(), or delete() based upon
-        the specified index operation.
+        Args:
+            indexop: IndexOp object
 
         Returns:
             None
-        """
-        return
-
-    @abc.abstractmethod
-    def create(self):
-        """ Creates an index for the specified keys
-
-        Returns:
-            List of documents created
-        """
-        return
-
-    @abc.abstractmethod
-    def update(self):
-        """Updates an index for the specified keys
-
-        Returns:
-            List of documents updated
-        """
-        return
-
-    @abc.abstractmethod
-    def delete(self):
-        """Deletes an index for the specified keys
-
-        Returns:
-            List of keys deleted from index
         """
         return
 
@@ -74,74 +45,76 @@ class GenericIndexer(IndexerDelegate):
     dynamically based upon the provided index name and document type.
 
     This IndexerDelegate subclass has no special functionality in
-    its create(), update(), and delete() methods.  It simply iterates through
-    the list of specified keys and invokes the ElasticSearch client.
+    its index() method.  It simply iterates through the list of
+    specified keys and invokes the underlying ElasticSearch client.
     """
-    def __init__(self, db_session_factory, index_client_pool, indexop):
+    def __init__(self, db_session_factory, index_client_pool):
         """ GenericIndexer Constructor
 
          Args:
             db_session_factory: callable returning a new sqlalchemy db session
             index_client_pool: pool of index client objects
-            indexop: IndexOp object
         """
-        super(GenericIndexer, self).__init__(db_session_factory, index_client_pool, indexop)
+        super(GenericIndexer, self).__init__(db_session_factory, index_client_pool)
         self.log = logging.getLogger(__name__)
 
-        # Get ESDocumentFactory
+
+    def index(self, indexop):
+
         es_factory = ESFactory(
             self.db_session_factory,
-            self.indexop.data.name,
-            self.indexop.data.type
+            indexop.data.name,
+            indexop.data.type
         )
         # es_factory returns an ESDocumentFactory instance
-        self.document_factory = es_factory.create()
+        document_factory = es_factory.create()
 
         # Get ESClient
         with self.index_client_pool.get() as es_client:
-            self.indexer = es_client.get_bulk_index(
-                self.indexop.data.name,
-                self.indexop.data.type,
+            # get bulk index
+            index = es_client.get_bulk_index(
+                indexop.data.name,
+                indexop.data.type,
                 autoflush=20
             )
+            # perform index operation
+            if indexop.action == IndexAction.Create:
+                self.create(indexop, index, document_factory)
+            elif indexop.action == IndexAction.Update:
+                self.update(indexop, index, document_factory)
+            elif indexop.action == IndexAction.Delete:
+                self.delete(indexop, index)
+            else:
+                self.log.error("Index action not supported.")
 
-    def index(self):
-        if self.indexop.action == IndexAction.Create:
-            self.create()
-        elif self.indexop.action == IndexAction.Update:
-            self.update()
-        elif self.indexop.action == IndexAction.Delete:
-            self.delete()
-        else:
-            self.log.error("Index action not supported.")
 
-    def create(self):
+    def create(self, indexop, index, document_factory):
         createdDocsList = []
-        with self.indexer.flushing():
-            for key in self.indexop.data.keys:
-                doc = self.document_factory.generate(key)
+        with index.flushing():
+            for key in indexop.data.keys:
+                doc = document_factory.generate(key)
                 # setting create=True flag means that the index operation will
                 # fail if the document already exists
-                self.indexer.put(key, doc, create=True)
+                index.put(key, doc, create=True)
                 createdDocsList.append(doc)
         return createdDocsList
 
-    def update(self):
+    def update(self, indexop, index, document_factory):
         updatedDocsList = []
-        with self.indexer.flushing():
-            for key in self.indexop.data.keys:
-                doc = self.document_factory.generate(key)
+        with index.flushing():
+            for key in indexop.data.keys:
+                doc = document_factory.generate(key)
                 # setting create=False means that the index operation will
                 # succeed if the document already exists.  It also means that
                 # the document *will be* created if it doesn't already exist.
-                self.indexer.put(key, doc, create=False)
+                index.put(key, doc, create=False)
                 updatedDocsList.append(doc)
         return updatedDocsList
 
-    def delete(self):
+    def delete(self, indexop, index):
         deletedKeysList = []
-        with self.indexer.flushing():
-            for key in self.indexop.data.keys:
-                self.indexer.delete(key)
+        with index.flushing():
+            for key in indexop.data.keys:
+                index.delete(key)
                 deletedKeysList.append(key)
         return deletedKeysList

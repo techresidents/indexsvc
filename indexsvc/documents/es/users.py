@@ -28,6 +28,7 @@ class ESUserDocumentFactory(ESDocumentFactory):
         try:
             # lookup user and associated data
             db_session = self.db_session_factory()
+            # TODO
             user = db_session.query(User).\
                 filter(User.id==key).\
                 one()
