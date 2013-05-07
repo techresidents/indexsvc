@@ -16,7 +16,7 @@ from trindexsvc.gen.ttypes import UnavailableException, InvalidDataException
 import settings
 
 from jobmonitor import IndexJobMonitor, IndexThreadPool
-from indexer import Indexer
+from indexer_coordinator import IndexerCoordinator
 from indexop import IndexAction, IndexOp
 
 
@@ -45,21 +45,21 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
             size=settings.ES_POOL_SIZE
         )
 
-        # Create factory to return Indexers which perform actual indexing
-        def indexer_factory():
-            return Indexer(
+        # Create factory to return IndexerCoordinators
+        def indexer_coordinator_factory():
+            return IndexerCoordinator(
                 db_session_factory=self.get_database_session,
                 job_retry_seconds=settings.INDEXER_JOB_RETRY_SECONDS,
                 index_client_pool=self.es_client_pool
             )
-        self.indexer_pool = QueuePool(
+        self.indexer_coordinator_pool = QueuePool(
             size=settings.INDEXER_POOL_SIZE,
-            factory=Factory(indexer_factory))
+            factory=Factory(indexer_coordinator_factory))
 
         # Create pool of threads to manage the work
         self.thread_pool = IndexThreadPool(
             num_threads=settings.INDEXER_THREADS,
-            indexer_pool=self.indexer_pool)
+            indexer_coordinator_pool=self.indexer_coordinator_pool)
 
         # Create job monitor which scans for new jobs
         # to process and delegates to the thread pool

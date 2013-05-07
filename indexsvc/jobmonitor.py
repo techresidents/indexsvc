@@ -15,17 +15,17 @@ class IndexThreadPool(ThreadPool):
     Given a work item (a databasejob), this class will process the
     job and delegate the work to do the indexing.
     """
-    def __init__(self, num_threads, indexer_pool):
+    def __init__(self, num_threads, indexer_coordinator_pool):
         """Constructor.
 
         Arguments:
             num_threads: number of worker threads
-            indexer_pool: pool of Indexer objects responsible for
+            indexer_pool: pool of IndexerCoordinator objects responsible for
                 doing the indexing work
         """
         super(IndexThreadPool, self).__init__(num_threads)
         self.log = logging.getLogger(__name__)
-        self.indexer_pool = indexer_pool
+        self.indexer_coordinator_pool = indexer_coordinator_pool
 
 
     def process(self, database_job):
@@ -38,8 +38,8 @@ class IndexThreadPool(ThreadPool):
             database_job: DatabaseJob object, or objected derived from DatabaseJob
         """
         try:
-            with self.indexer_pool.get() as indexer:
-                indexer.index(database_job)
+            with self.indexer_coordinator_pool.get() as indexer_coordinator:
+                indexer_coordinator.index(database_job)
 
         except Exception as e:
             self.log.exception(e)

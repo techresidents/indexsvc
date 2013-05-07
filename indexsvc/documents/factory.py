@@ -1,13 +1,13 @@
 from trpycore.factory.base import Factory
 
-from users import ESUserDocumentFactory
+from es_users import ESUserDocumentGenerator
 
 
-class ESFactory(Factory):
-    """Factory for creating ElasticSearch document factories."""
+class DocumentGeneratorFactory(Factory):
+    """Factory for creating DocumentGenerator objects."""
 
     def __init__(self, db_session_factory, name, type):
-        """ESFactory constructor.
+        """DocumentGenerator constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session
@@ -19,13 +19,13 @@ class ESFactory(Factory):
         self.type = type
 
     def create(self):
-        """Create an instance of ESDocumentFactory based upon input name and type
+        """Create an instance of DocumentGenerator based upon input name and type
 
         Returns:
-            Instance of ESDocumentFactory for supported index names/document types.
+            Instance of DocumentGenerator for supported index names/document types.
             Returns None for unsupported name/type combinations.
         """
         ret = None
         if self.name == 'users' and self.type == 'user':
-            ret = ESUserDocumentFactory(self.db_session_factory)
+            ret = ESUserDocumentGenerator(self.db_session_factory)
         return ret

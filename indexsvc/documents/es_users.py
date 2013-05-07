@@ -3,11 +3,11 @@ from datetime import datetime
 from trsvcscore.db.models import User, DeveloperProfile, Skill, \
     JobLocationPref, JobTechnologyPref, JobPositionTypePref
 
-from document import ESDocumentFactory
+from document import DocumentGenerator
 
 
-class ESUserDocumentFactory(ESDocumentFactory):
-    """ ESUserDocumentFactory is responsible for generating an ElasticSearch user document
+class ESUserDocumentGenerator(DocumentGenerator):
+    """ ESUserDocumentGenerator is responsible for generating an ElasticSearch user document
 
     This class is responsible for fetching all needed data from the db
     based upon the input key parameter, and returning a JSON dict that
@@ -15,9 +15,9 @@ class ESUserDocumentFactory(ESDocumentFactory):
     """
 
     def __init__(self, db_session_factory):
-        super(ESUserDocumentFactory, self).__init__(db_session_factory)
+        super(ESUserDocumentGenerator, self).__init__(db_session_factory)
 
-    def generate(self, key):
+    def generate(self, keys):
         """Generates a JSON dict that can be indexed by ES
 
         Args:
@@ -28,50 +28,63 @@ class ESUserDocumentFactory(ESDocumentFactory):
         try:
             # lookup user and associated data
             db_session = self.db_session_factory()
-            # TODO
-            user = db_session.query(User).\
-                filter(User.id==key).\
-                one()
-            developer_profile = db_session.query(DeveloperProfile).\
-                filter(DeveloperProfile.user_id==key).\
-                one()
-            skills = db_session.query(Skill).\
-                filter(Skill.user_id==user.id).\
-                all()
-            location_prefs = db_session.query(JobLocationPref).\
-                filter(JobLocationPref.user_id==user.id).\
-                all()
-            technology_prefs = db_session.query(JobTechnologyPref).\
-                filter(JobTechnologyPref.user_id==user.id).\
-                all()
-            position_prefs = db_session.query(JobPositionTypePref).\
-                filter(JobPositionTypePref.user_id==user.id).\
-                all()
 
-            # generate ES document JSON
-            es_user = ESUserDocument(user.id, user.date_joined)
-            for skill in skills:
-                es_user.add_skill(skill)
-            for location_pref in location_prefs:
-                es_user.add_location_pref(location_pref)
-            for technology_pref in technology_prefs:
-                es_user.add_technology_pref(technology_pref)
-            for position_pref in position_prefs:
-                es_user.add_position_pref(position_pref)
-            # Calculate total yrs experience
-            if developer_profile.developer_since:
-                current_year = datetime.now().year
-                yrs_experience = current_year - developer_profile.developer_since.year
-                es_user.set_yrs_experience(yrs_experience)
+            # Read all users at once as performance optimization
+            users = []
+            if not len(keys):
+                # No keys indicates we need to index all users
+                users = db_session.query(User).all()
             else:
-                # Derive total yrs experience from the skill with the most yrs
-                yrs_experience = None
-                for skill in es_user.skills:
-                    if skill['yrs_experience'] > yrs_experience:
-                        yrs_experience = skill['yrs_experience']
-                es_user.set_yrs_experience(yrs_experience)
+                # TODO left off here
+                for key in keys:
+                    user = db_session.query(User).\
+                        filter(User.id==key).\
+                        one()
+                    users.append(user)
 
-            return es_user.to_json()
+            for user in users:
+                # TODO user.skills, etc
+                # Read user data
+                developer_profile = db_session.query(DeveloperProfile).\
+                    filter(DeveloperProfile.user_id==user.id).\
+                    one()
+                skills = db_session.query(Skill).\
+                    filter(Skill.user_id==user.id).\
+                    all()
+                location_prefs = db_session.query(JobLocationPref).\
+                    filter(JobLocationPref.user_id==user.id).\
+                    all()
+                technology_prefs = db_session.query(JobTechnologyPref).\
+                    filter(JobTechnologyPref.user_id==user.id).\
+                    all()
+                position_prefs = db_session.query(JobPositionTypePref).\
+                    filter(JobPositionTypePref.user_id==user.id).\
+                    all()
+
+                # generate ES document JSON
+                es_user = ESUserDocument(user.id, user.date_joined)
+                for skill in skills:
+                    es_user.add_skill(skill)
+                for location_pref in location_prefs:
+                    es_user.add_location_pref(location_pref)
+                for technology_pref in technology_prefs:
+                    es_user.add_technology_pref(technology_pref)
+                for position_pref in position_prefs:
+                    es_user.add_position_pref(position_pref)
+                # Calculate total yrs experience
+                if developer_profile.developer_since:
+                    current_year = datetime.now().year
+                    yrs_experience = current_year - developer_profile.developer_since.year
+                    es_user.set_yrs_experience(yrs_experience)
+                else:
+                    # Derive total yrs experience from the skill with the most yrs
+                    yrs_experience = None
+                    for skill in es_user.skills:
+                        if skill['yrs_experience'] > yrs_experience:
+                            yrs_experience = skill['yrs_experience']
+                    es_user.set_yrs_experience(yrs_experience)
+
+                yield es_user.to_json()
 
         except Exception as e:
             self.log.exception(e)
