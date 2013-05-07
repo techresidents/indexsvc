@@ -27,8 +27,6 @@ class ESIndexer(Indexer):
         """
         super(ESIndexer, self).__init__(db_session_factory, index_client_pool)
         self.log = logging.getLogger(__name__)
-
-        # get an DocumentGeneratorFactory instance
         factory = DocumentGeneratorFactory(
             self.db_session_factory,
             index_name,
@@ -38,7 +36,6 @@ class ESIndexer(Indexer):
 
 
     def index(self, indexop):
-
         # Get an ESClient and perform indexing
         with self.index_client_pool.get() as es_client:
             # get bulk index

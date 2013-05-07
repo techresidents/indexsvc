@@ -7,7 +7,7 @@ class DocumentGeneratorFactory(Factory):
     """Factory for creating DocumentGenerator objects."""
 
     def __init__(self, db_session_factory, name, type):
-        """DocumentGenerator constructor.
+        """DocumentGeneratorFactory constructor.
 
         Args:
             db_session_factory: callable returning a new sqlalchemy db session

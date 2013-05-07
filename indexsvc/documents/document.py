@@ -27,7 +27,7 @@ class DocumentGenerator(object):
             keys: list of db keys
 
         Returns:
-            Indexable document
+            Uses a generator to return an indexable document
 
         """
         pass

@@ -12,7 +12,8 @@ from indexop import IndexOp
 
 
 class IndexerCoordinator(object):
-    """ Responsible for processing IndexJobs.
+    """ IndexerCoordinator is responsible for processing IndexJobs and delegating
+    the work of indexing to Indexer objects.
 
     Args:
         db_session_factory: callable returning a new sqlalchemy db session

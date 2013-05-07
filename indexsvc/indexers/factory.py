@@ -21,15 +21,18 @@ class IndexerFactory(Factory):
         self.doc_type = doc_type
 
     def create(self):
-        """Return instance of Indexer"""
-        return ESIndexer(
-            self.db_session_factory,
-            self.index_client_pool,
-            self.index_name,
-            self.doc_type
-        )
-        # We only have a ESIndexer right now, so return that.
-        # For the future, we'll return an indexer based upon the input
-        # index name and document type, like this:
-        # if index_name == 'users' and doc_type == 'user':
-        #    ret = ESIndexer()
+        """Create an instance of Indexer based upon input name and type
+
+         Returns:
+            Instance of Indexer for supported index names/document types.
+            Returns None for unsupported name/type combinations.
+        """
+        ret = None
+        if self.index_name == 'users' and self.doc_type == 'user':
+            ret = ESIndexer(
+                self.db_session_factory,
+                self.index_client_pool,
+                self.index_name,
+                self.doc_type
+            )
+        return ret

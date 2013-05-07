@@ -24,7 +24,7 @@ class ESUserDocumentGenerator(DocumentGenerator):
         Args:
             key: user db key
         Returns:
-            A tuple of (key, JSON dictionary)
+            Uses a generator to return a tuple of (key, JSON dictionary)
         """
         try:
             # lookup user and associated data
