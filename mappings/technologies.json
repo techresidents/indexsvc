@@ -1,0 +1,33 @@
+{ 
+  "mappings": {
+    "technology" : {
+      "properties" : {
+        "description" : {
+          "type" : "string"
+        },
+        "id" : {
+          "type" : "long"
+        },
+        "name" : {
+          "type" : "multi_field",
+          "fields" : {
+            "name" : {
+              "type" : "string"
+            },
+            "autocomplete" : {
+              "type" : "string",
+              "analyzer" : "autocomplete",
+              "include_in_all" : false
+            }
+          }
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "type_id" : {
+          "type" : "long"
+        }
+      }
+    }
+  }
+}
