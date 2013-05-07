@@ -1,4 +1,5 @@
 from datetime import datetime
+import pprint
 
 from trsvcscore.db.models import User, DeveloperProfile, Skill, \
     JobLocationPref, JobTechnologyPref, JobPositionTypePref
@@ -10,7 +11,7 @@ class ESUserDocumentGenerator(DocumentGenerator):
     """ ESUserDocumentGenerator is responsible for generating an ElasticSearch user document
 
     This class is responsible for fetching all needed data from the db
-    based upon the input key parameter, and returning a JSON dict that
+    based upon the input keys parameter, and returning a JSON dictionary that
     can be indexed by ES.
     """
 
@@ -84,12 +85,11 @@ class ESUserDocumentGenerator(DocumentGenerator):
                             yrs_experience = skill['yrs_experience']
                     es_user.set_yrs_experience(yrs_experience)
 
-                yield es_user.to_json()
+                # return (key, doc) tuple
+                pp = pprint.PrettyPrinter(indent=4)
+                pp.pprint(es_user.to_json())
+                yield (user.id, es_user.to_json())
 
-        except Exception as e:
-            self.log.exception(e)
-            if db_session:
-                db_session.rollback()
         finally:
             if db_session:
                 db_session.close()

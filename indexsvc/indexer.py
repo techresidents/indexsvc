@@ -1,7 +1,7 @@
 import abc
 import logging
 
-from documents.es.factory import ESFactory
+from documents.factory import DocumentGeneratorFactory
 from indexop import IndexAction
 
 
@@ -60,13 +60,13 @@ class ESIndexer(Indexer):
         super(ESIndexer, self).__init__(db_session_factory, index_client_pool)
         self.log = logging.getLogger(__name__)
 
-        # es_factory returns an ESDocumentFactory instance
-        es_factory = ESFactory(
+        # get an DocumentGeneratorFactory instance
+        factory = DocumentGeneratorFactory(
             self.db_session_factory,
             index_name,
             doc_type
         )
-        self.document_factory = es_factory.create()
+        self.document_generator = factory.create()
 
 
     def index(self, indexop):
@@ -91,37 +91,30 @@ class ESIndexer(Indexer):
 
 
     def create(self, indexop, index):
-        createdDocsList = []
+        createdDocsCount = 0
         with index.flushing():
-            # TODO  look at zip
-            for key,doc in self.document_factory.generate(indexop.data.keys):
-                index.put(key, doc, create=True)
-                createdDocsList.append(doc) #TODO delete after testing, return count
-
-            for key in indexop.data.keys:
-                doc = self.document_factory.generate(key)
+            for key,doc in self.document_generator.generate(indexop.data.keys):
                 # setting create=True flag means that the index operation will
                 # fail if the document already exists
                 index.put(key, doc, create=True)
-                createdDocsList.append(doc)
-        return createdDocsList
+                createdDocsCount += 1
+        return createdDocsCount
 
     def update(self, indexop, index):
-        updatedDocsList = []
+        updatedDocsCount = 0
         with index.flushing():
-            for key in indexop.data.keys:
-                doc = self.document_factory.generate(key)
+            for key,doc in self.document_generator.generate(indexop.data.keys):
                 # setting create=False means that the index operation will
                 # succeed if the document already exists.  It also means that
                 # the document *will be* created if it doesn't already exist.
                 index.put(key, doc, create=False)
-                updatedDocsList.append(doc)
-        return updatedDocsList
+                updatedDocsCount += 1
+        return updatedDocsCount
 
     def delete(self, indexop, index):
-        deletedKeysList = []
+        deletedKeysCount = 0
         with index.flushing():
             for key in indexop.data.keys:
                 index.delete(key)
-                deletedKeysList.append(key)
-        return deletedKeysList
+                deletedKeysCount += 1
+        return deletedKeysCount
