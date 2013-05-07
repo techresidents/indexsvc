@@ -1,3 +1,4 @@
+import json
 import logging
 
 from sqlalchemy.sql import func
@@ -218,7 +219,7 @@ class IndexServiceHandler(TIndexService.Iface, ServiceHandler):
                 context=context,
                 not_before=processing_start_time,
                 retries_remaining=settings.INDEXER_JOB_MAX_RETRY_ATTEMPTS,
-                data=data.to_json()
+                data=json.dumps(data.to_json())
             )
             db_session.add(job)
             db_session.commit()

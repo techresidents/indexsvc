@@ -35,16 +35,12 @@ class IndexOp(object):
 
     def to_json(self):
         """ Return IndexOp as JSON formatted string"""
-
-        # Grab only the pertinent info from the input Thrift IndexData obj.
-        # Note that this doesn't include the index action.
-        index_data_json = json.dumps(self.data, cls=Encoder)
-
-        # Add the index action to this JSON data so that this object
-        # completely specifies the indexing work that needs to be done.
-        index_data = json.loads(index_data_json)
-        index_data['action'] = self.action
-        return json.dumps(index_data)
+        return {
+            "action": self.action,
+            "name": self.data.name,
+            "type": self.data.type,
+            "keys": [key for key in self.data.keys]
+        }
 
     @staticmethod
     def from_json(data):
@@ -55,19 +51,3 @@ class IndexOp(object):
         type = data_obj['type']
         keys = data_obj['keys']
         return IndexOp(action, IndexData(name=name, type=type, keys=keys))
-
-
-
-class Encoder(json.JSONEncoder):
-    """Encoder to encode Thrift IndexData objects """
-    def __init__(self, *args, **kwargs):
-        super(Encoder, self).__init__(*args, **kwargs)
-
-    def default(self, obj):
-        if isinstance(obj, IndexData):
-            return {
-                "name": obj.name,
-                "type": obj.type,
-                "keys": [key for key in obj.keys]
-            }
-        return json.JSONEncoder.default(self, obj)
