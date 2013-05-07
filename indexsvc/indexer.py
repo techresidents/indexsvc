@@ -87,7 +87,7 @@ class ESIndexer(Indexer):
             elif indexop.action == IndexAction.Delete:
                 self.delete(indexop, index)
             else:
-                self.log.error("Index action not supported.")
+                raise Exception("Index action not supported")
 
 
     def create(self, indexop, index):
@@ -97,6 +97,8 @@ class ESIndexer(Indexer):
                 # setting create=True flag means that the index operation will
                 # fail if the document already exists
                 index.put(key, doc, create=True)
+                if len(index.errors):
+                    raise Exception("ElasticSearch client error")
                 createdDocsCount += 1
         return createdDocsCount
 
@@ -108,6 +110,8 @@ class ESIndexer(Indexer):
                 # succeed if the document already exists.  It also means that
                 # the document *will be* created if it doesn't already exist.
                 index.put(key, doc, create=False)
+                if len(index.errors):
+                    raise Exception("ElasticSearch client error")
                 updatedDocsCount += 1
         return updatedDocsCount
 
@@ -116,5 +120,7 @@ class ESIndexer(Indexer):
         with index.flushing():
             for key in indexop.data.keys:
                 index.delete(key)
+                if len(index.errors):
+                    raise Exception("ElasticSearch client error")
                 deletedKeysCount += 1
         return deletedKeysCount

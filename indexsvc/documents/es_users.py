@@ -55,7 +55,7 @@ class ESUserDocumentGenerator(DocumentGenerator):
                     es_user.set_yrs_experience(yrs_experience)
                 else:
                     # Derive total yrs experience from the skill with the most yrs
-                    yrs_experience = None
+                    yrs_experience = 0
                     for skill in es_user.skills:
                         if skill['yrs_experience'] > yrs_experience:
                             yrs_experience = skill['yrs_experience']
