@@ -1,8 +1,7 @@
 from datetime import datetime
 import pprint
 
-from trsvcscore.db.models import User, DeveloperProfile, Skill, \
-    JobLocationPref, JobTechnologyPref, JobPositionTypePref
+from trsvcscore.db.models import User
 
 from document import DocumentGenerator
 
@@ -24,58 +23,35 @@ class ESUserDocumentGenerator(DocumentGenerator):
         Args:
             key: user db key
         Returns:
-            JSON dictionary
+            A tuple of (key, JSON dictionary)
         """
         try:
             # lookup user and associated data
             db_session = self.db_session_factory()
 
             # Read all users at once as performance optimization
-            users = []
-            if not len(keys):
-                # No keys indicates we need to index all users
-                users = db_session.query(User).all()
-            else:
-                # TODO left off here
-                for key in keys:
-                    user = db_session.query(User).\
-                        filter(User.id==key).\
-                        one()
-                    users.append(user)
+            developer_tenant_id = 1
+            query = db_session.query(User).filter(User.tenant_id==developer_tenant_id)
+            if len(keys):
+                query = query.filter(User.id.in_(keys))
+            # An empty keys list implies to index all keys
+            users = query.all()
 
             for user in users:
-                # TODO user.skills, etc
-                # Read user data
-                developer_profile = db_session.query(DeveloperProfile).\
-                    filter(DeveloperProfile.user_id==user.id).\
-                    one()
-                skills = db_session.query(Skill).\
-                    filter(Skill.user_id==user.id).\
-                    all()
-                location_prefs = db_session.query(JobLocationPref).\
-                    filter(JobLocationPref.user_id==user.id).\
-                    all()
-                technology_prefs = db_session.query(JobTechnologyPref).\
-                    filter(JobTechnologyPref.user_id==user.id).\
-                    all()
-                position_prefs = db_session.query(JobPositionTypePref).\
-                    filter(JobPositionTypePref.user_id==user.id).\
-                    all()
-
                 # generate ES document JSON
                 es_user = ESUserDocument(user.id, user.date_joined)
-                for skill in skills:
+                for skill in user.skills:
                     es_user.add_skill(skill)
-                for location_pref in location_prefs:
+                for location_pref in user.job_location_prefs:
                     es_user.add_location_pref(location_pref)
-                for technology_pref in technology_prefs:
+                for technology_pref in user.job_technology_prefs:
                     es_user.add_technology_pref(technology_pref)
-                for position_pref in position_prefs:
+                for position_pref in user.job_position_type_prefs:
                     es_user.add_position_pref(position_pref)
                 # Calculate total yrs experience
-                if developer_profile.developer_since:
+                if user.developer_profile.developer_since:
                     current_year = datetime.now().year
-                    yrs_experience = current_year - developer_profile.developer_since.year
+                    yrs_experience = current_year - user.developer_profile.developer_since.year
                     es_user.set_yrs_experience(yrs_experience)
                 else:
                     # Derive total yrs experience from the skill with the most yrs
