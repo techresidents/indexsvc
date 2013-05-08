@@ -1,6 +1,7 @@
 from trpycore.factory.base import Factory
 
 from es_users import ESUserDocumentGenerator
+from es_technologies import ESTechnologyDocumentGenerator
 
 
 class DocumentGeneratorFactory(Factory):
@@ -28,4 +29,7 @@ class DocumentGeneratorFactory(Factory):
         ret = None
         if self.name == 'users' and self.type == 'user':
             ret = ESUserDocumentGenerator(self.db_session_factory)
+        elif self.name == 'technologies' and self.type == 'technology':
+            ret = ESTechnologyDocumentGenerator(self.db_session_factory)
+        
         return ret
