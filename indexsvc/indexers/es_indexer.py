@@ -46,13 +46,16 @@ class ESIndexer(Indexer):
             )
             # perform index operation
             if indexop.action == IndexAction.Create:
-                self.create(indexop, index)
+                count = self.create(indexop, index)
+                self.log.info("ESIndexer successfully created %d documents for index '%s/%s'" % (count, indexop.data.name, indexop.data.type))
             elif indexop.action == IndexAction.Update:
-                self.update(indexop, index)
+                count = self.update(indexop, index)
+                self.log.info("ESIndexer successfully updated %d documents for index '%s/%s'" % (count, indexop.data.name, indexop.data.type))
             elif indexop.action == IndexAction.Delete:
-                self.delete(indexop, index)
+                count = self.delete(indexop, index)
+                self.log.info("ESIndexer successfully deleted %d documents for index '%s/%s'" % (count, indexop.data.name, indexop.data.type))
             else:
-                raise Exception("Index action not supported")
+                raise Exception("ESIndexerIndex action not supported")
 
 
     def create(self, indexop, index):

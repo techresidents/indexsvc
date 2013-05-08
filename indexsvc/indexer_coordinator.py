@@ -97,6 +97,7 @@ class IndexerCoordinator(object):
                 )
                 indexer = factory.create()
                 indexer.index(indexop)
+                self.log.info("IndexJob with index_job_id=%d successfully processed" % job.id)
                 # TODO return async object
 
         except JobOwned:
@@ -104,7 +105,7 @@ class IndexerCoordinator(object):
             # this thread claimed it. Stop processing the job. There's
             # no need to abort the job since no processing of the job
             # has occurred.
-            self.log.warning("IndexJob with job_id=%d already claimed. Stopping processing." % job.id)
+            self.log.warning("IndexJob with index_job_id=%d already claimed. Stopping processing." % job.id)
         except Exception as e:
             #failure during processing.
             self.log.exception(e)

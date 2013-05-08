@@ -18,7 +18,7 @@ THRIFT_SERVER_PORT = 9096
 DATABASE_HOST = "localhost"
 DATABASE_NAME = "techresidents"
 DATABASE_USERNAME = "techresidents"
-DATABASE_PASSWORD = "t3chresident$"
+DATABASE_PASSWORD = "t3chResident$"
 DATABASE_CONNECTION = "postgresql+psycopg2://%s:%s@/%s?host=%s" % (DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_HOST)
 
 #Zookeeper settings
