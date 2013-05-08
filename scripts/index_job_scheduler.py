@@ -16,6 +16,7 @@ options:
 """
 import datetime
 import getopt
+import os
 import sys
 import time
 
@@ -25,6 +26,12 @@ from trpycore.timezone import tz
 from trpycore.zookeeper.client import ZookeeperClient
 from trsvcscore.proxy.zoo import ZookeeperServiceProxy
 
+PROJECT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+SERVICE =  os.path.basename(PROJECT_DIRECTORY)
+SERVICE_DIRECTORY = os.path.join(PROJECT_DIRECTORY, SERVICE)
+sys.path.insert(0, SERVICE_DIRECTORY)
+
+import settings
 
 
 class Usage(Exception):
@@ -89,7 +96,7 @@ def main(argv):
         )
 
     def get_zookeeper_client():
-        zookeeper_client = ZookeeperClient(["localdev:2181"])
+        zookeeper_client = ZookeeperClient(settings.ZOOKEEPER_HOSTS)
         zookeeper_client.start()
         time.sleep(1)
         return zookeeper_client
