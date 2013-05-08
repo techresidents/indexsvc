@@ -29,5 +29,19 @@
         }
       }
     }
+  },
+  "settings": {
+    "analysis":{
+      "analyzer":{
+        "autocomplete":{
+          "type":"custom",
+          "tokenizer":"standard",
+          "filter":[ "standard", "lowercase", "engram_filter" ]
+        }      
+      },    
+    "filter": {
+        "engram_filter": { "type": "edgeNGram",  max_gram: 15 } 
+      }
+    }
   }
 }
