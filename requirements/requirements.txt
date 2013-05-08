@@ -10,4 +10,4 @@ git+ssh://dev.techresidents.com/tr/repos/techresidents/lib/python/trhttp.git@0.1
 git+ssh://dev.techresidents.com/tr/repos/techresidents/services/core/python/trsvcscore.git@0.22.0#egg=trsvcscore
 
 http://nexus.dev.techresidents.com/content/groups/public/com/techresidents/services/core/idl/idl-core-python/0.7.0/idl-core-python-0.7.0-bin.tar.gz#egg=tridlcore
-http://nexus.dev.techresidents.com/content/groups/public/com/techresidents/services/indexsvc/indexsvc-idl-python/0.1.0/indexsvc-idl-python-0.1.0-bin.tar.gz#egg=trindexsvc
+http://nexus.dev.techresidents.com/content/groups/public/com/techresidents/services/indexsvc/indexsvc-idl-python/0.2-SNAPSHOT/indexsvc-idl-python-0.2-SNAPSHOT-bin.tar.gz#egg=trindexsvc
