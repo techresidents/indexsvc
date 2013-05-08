@@ -1,0 +1,43 @@
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "multi_match": {
+                    "query": "java",
+                    "fields": ["skills.name", "location_prefs.city", "position_prefs.type", "technology_prefs.name"]
+                }
+            },
+            "filter": {
+                "bool" : {
+                    "must": [
+                        { "terms": { "skills.name.raw": ["Javascript"] } }
+                    ]
+                }
+            }
+        }
+    },
+    "facets": {
+        "f_skills": {
+            "terms": {
+                "field": "skills.name.raw",
+                "size": 10
+            }
+        },
+        "f_location_prefs": {
+            "terms": {
+                "field": "location_prefs.city.raw",
+                "size": 10
+            }
+        },
+        "f_yrs_experience": {
+            "range": {
+                "field": "yrs_experience",
+                "ranges": [
+                    { "to": 2 },
+                    { "from": 3, "to": 5 },
+                    { "from": 6 }
+                ]
+            }
+        }
+    }
+}
