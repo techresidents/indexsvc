@@ -4,7 +4,6 @@ from trsvcscore.db.models import User
 
 from document import DocumentGenerator
 
-import pprint
 
 
 class ESUserDocumentGenerator(DocumentGenerator):
@@ -63,9 +62,8 @@ class ESUserDocumentGenerator(DocumentGenerator):
                     es_user.set_yrs_experience(yrs_experience)
 
                 # return (key, doc) tuple
-                pp = pprint.PrettyPrinter(indent=4)
-                pp.pprint(es_user.to_json())
                 yield (user.id, es_user.to_json())
+            db_session.commit()
 
         finally:
             if db_session:
