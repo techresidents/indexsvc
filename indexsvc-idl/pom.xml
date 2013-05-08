@@ -11,7 +11,7 @@
 
     <groupId>com.techresidents.services.indexsvc</groupId>
     <artifactId>indexsvc-idl</artifactId>
-    <version>0.2.0</version>
+    <version>0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>indexsvc idl</name>
