@@ -1,0 +1,19 @@
+{
+    "query": {
+        "filtered": {
+            "query": {
+                "multi_match": {
+                    "query": "developer",
+                    "fields": ["topic.title", "topic.description"]
+                }
+            },
+            "filter": {
+                "bool" : {
+                    "must": [
+                        { "terms": { "skills.name.raw": ["Javascript"] } }
+                    ]
+                }
+            }
+        }
+    }
+}

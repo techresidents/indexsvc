@@ -18,9 +18,11 @@ Development environment:
 
 How to add support for a new index:
 1) If no special functionality is needed in regard to how the index performs
-creates, updates, or deletes, all you need to do is subclass DocumentGenerator.
+creates, updates, or deletes, you need to subclass DocumentGenerator.
 This subclass encapsulates reading db entities and generating an indexable
 document.
+    a) You also need to ensure that the IndexerFactory returns the desired indexer for the new index/doc.
+    b) You also need to ensure that the DocumentGeneratorFactory returns your newly created DocumentGenerator.
 2) If more control is needed over how the index performs operations (create,
 update, delete), then you can subclass Indexer too.
 
