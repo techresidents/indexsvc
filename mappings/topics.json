@@ -23,37 +23,48 @@
         "tree" : {
           "properties" : {
             "id" : {
-              "type" : "long"
+              "type" : "long",
+              "index": "no"
             },
             "type_id" : {
-              "type" : "long"
+              "type" : "long",
+              "index": "no"
             },
             "type" : {
-              "type" : "string"
+              "type" : "string",
+              "index": "no"
             },
             "duration" : {
-              "type" : "integer"
+              "type" : "integer",
+              "index": "no"
             },
             "title" : {
-              "type" : "string"
+              "type" : "string",
+              "index": "no"
             },
             "description" : {
-              "type" : "string"
+              "type" : "string",
+              "index": "no"
             },
             "recommended_participants" : {
-              "type" : "integer"
+              "type" : "integer",
+              "index": "no"
             },
             "rank" : {
-              "type" : "integer"
+              "type" : "integer",
+              "index": "no"
             },
             "public" : {
-              "type" : "boolean"
+              "type" : "boolean",
+              "index": "no"
             },
             "active" : {
-              "type" : "boolean"
+              "type" : "boolean",
+              "index": "no"
             },
             "level" : {
-              "type" : "integer"
+              "type" : "integer",
+              "index": "no"
             }
           }
         }

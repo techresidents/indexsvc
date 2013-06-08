@@ -53,35 +53,36 @@ class ESTopicDocumentGenerator(DocumentGenerator):
             # Only index root topics since there aren't any use cases at
             # the present time to search for sub-topics.  Subtopic titles
             # and descriptions are indexed via the 'subtopic_summary' field.
-            root_topic_index = 0
+            root_topic_rank = 0
             query = db_session.query(Topic).options(joinedload(Topic.type)) # TODO alternative to loading on Topic type using Enum
-            query = query.filter(Topic.rank == root_topic_index)
+            query = query.filter(Topic.rank == root_topic_rank)
             if len(keys):
                 query = query.filter(Topic.id.in_(keys))
 
-            for topic in query.all():
+            for root_topic in query.all():
+                # Combine subtopic titles and descriptions
+                subtopic_summary = ''
 
                 # Create JSON topic tree
                 topic_tree = []
-                tree_manager = TreeManager(Topic)
-                for topic, level in tree_manager.tree_by_rank(db_session, topic.id):
-                    topic_tree.append(self._topic_to_json(topic, level))
 
-                # Combine subtopic titles and descriptions
-                subtopic_summary = ''
-                for subtopic in topic.children:
-                    subtopic_summary += subtopic.title + ': ' + subtopic.description
+                tree_manager = TreeManager(Topic)
+                for topic, level in tree_manager.tree_by_rank(db_session, root_topic.id):
+                    topic_tree.append(self._topic_to_json(topic, level))
+                    # Skip adding the root topic's title & description to subtopic_summary
+                    if topic.rank != root_topic_rank:
+                        subtopic_summary += topic.title + ' ' + topic.description
 
                 topic_json = {
-                    "id": topic.id,
-                    "type": topic.type.name,
-                    "duration": topic.duration,
-                    "title": topic.title,
-                    "description": topic.description,
+                    "id": root_topic.id,
+                    "type": root_topic.type.name,
+                    "duration": root_topic.duration,
+                    "title": root_topic.title,
+                    "description": root_topic.description,
                     "subtopic_summary": subtopic_summary,
                     "tree": topic_tree
                 }
-                yield (topic.id, topic_json)
+                yield (root_topic.id, topic_json)
 
             db_session.commit()
 
