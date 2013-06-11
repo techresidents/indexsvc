@@ -36,3 +36,16 @@ Useful ElasticSearch commands:
 >> curl -XPOST 'http://localdev:9200/users' -d @mapping
 # Query users index with file containing query (located at indexsvc/data/es)
 >> curl -XGET 'http://localdev:9200/users/user/_search?pretty=1' -d @user_query.json
+
+
+
+Latest ES commands needed to get env up-to-date:
+# Users index
+>> curl -XPOST 'http://localdev:9200/users' -d @users.json
+>> python index_job_scheduler.py -i users -t user
+# Topics index
+>> curl -XPOST 'http://localdev:9200/topics' -d @topics.json
+>> python index_job_scheduler.py -i topics -t topic
+# Technologies index
+>> curl -XPOST 'http://localdev:9200/technologies' -d @technologies.json
+>> python index_job_scheduler.py -i technologies -t technology
