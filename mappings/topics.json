@@ -2,35 +2,28 @@
   "mappings": {
     "topic" : {
       "properties" : {
-        "id" : {
-          "type" : "long"
-        },
-        "type" : {
+        "description" : {
           "type" : "string"
         },
         "duration" : {
           "type" : "integer"
         },
-        "title" : {
-          "type" : "string"
-        },
-        "description" : {
-          "type" : "string"
+        "id" : {
+          "type" : "long"
         },
         "subtopic_summary" : {
           "type" : "string"
         },
+        "title" : {
+          "type" : "string"
+        },
         "tree" : {
           "properties" : {
-            "id" : {
-              "type" : "long",
+            "active" : {
+              "type" : "boolean",
               "index": "no"
             },
-            "type_id" : {
-              "type" : "long",
-              "index": "no"
-            },
-            "type" : {
+            "description" : {
               "type" : "string",
               "index": "no"
             },
@@ -38,19 +31,11 @@
               "type" : "integer",
               "index": "no"
             },
-            "title" : {
-              "type" : "string",
+            "id" : {
+              "type" : "long",
               "index": "no"
             },
-            "description" : {
-              "type" : "string",
-              "index": "no"
-            },
-            "recommended_participants" : {
-              "type" : "integer",
-              "index": "no"
-            },
-            "rank" : {
+            "level" : {
               "type" : "integer",
               "index": "no"
             },
@@ -58,15 +43,30 @@
               "type" : "boolean",
               "index": "no"
             },
-            "active" : {
-              "type" : "boolean",
+            "rank" : {
+              "type" : "integer",
               "index": "no"
             },
-            "level" : {
+            "recommended_participants" : {
               "type" : "integer",
+              "index": "no"
+            },
+            "title" : {
+              "type" : "string",
+              "index": "no"
+            },
+            "type" : {
+              "type" : "string",
+              "index": "no"
+            },
+            "type_id" : {
+              "type" : "long",
               "index": "no"
             }
           }
+        },
+        "type" : {
+          "type" : "string"
         }
       }
     }
