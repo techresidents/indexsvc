@@ -1,0 +1,74 @@
+{
+  "mappings": {
+    "topic" : {
+      "properties" : {
+        "description" : {
+          "type" : "string"
+        },
+        "duration" : {
+          "type" : "integer"
+        },
+        "id" : {
+          "type" : "long"
+        },
+        "subtopic_summary" : {
+          "type" : "string"
+        },
+        "title" : {
+          "type" : "string"
+        },
+        "tree" : {
+          "properties" : {
+            "active" : {
+              "type" : "boolean",
+              "index": "no"
+            },
+            "description" : {
+              "type" : "string",
+              "index": "no"
+            },
+            "duration" : {
+              "type" : "integer",
+              "index": "no"
+            },
+            "id" : {
+              "type" : "long",
+              "index": "no"
+            },
+            "level" : {
+              "type" : "integer",
+              "index": "no"
+            },
+            "public" : {
+              "type" : "boolean",
+              "index": "no"
+            },
+            "rank" : {
+              "type" : "integer",
+              "index": "no"
+            },
+            "recommended_participants" : {
+              "type" : "integer",
+              "index": "no"
+            },
+            "title" : {
+              "type" : "string",
+              "index": "no"
+            },
+            "type" : {
+              "type" : "string",
+              "index": "no"
+            },
+            "type_id" : {
+              "type" : "long",
+              "index": "no"
+            }
+          }
+        },
+        "type" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

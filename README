@@ -18,19 +18,33 @@ Development environment:
 
 How to add support for a new index:
 1) If no special functionality is needed in regard to how the index performs
-creates, updates, or deletes, all you need to do is subclass DocumentGenerator.
+creates, updates, or deletes, you need to subclass DocumentGenerator.
 This subclass encapsulates reading db entities and generating an indexable
 document.
+    a) You also need to ensure that the IndexerFactory returns the desired indexer for the new index/doc.
+    b) You also need to ensure that the DocumentGeneratorFactory returns your newly created DocumentGenerator.
 2) If more control is needed over how the index performs operations (create,
 update, delete), then you can subclass Indexer too.
 
 
-
-
 Useful ElasticSearch commands:
 # Delete users index
->> curl -XDELETE 'http://localdev:9200/users'
+$ curl -XDELETE 'http://localdev:9200/users'
 # Create users index with a mapping file (located at indexsvc/mappings)
->> curl -XPOST 'http://localdev:9200/users' -d @mapping
+$ curl -XPOST 'http://localdev:9200/users' -d @mappings/users.json
 # Query users index with file containing query (located at indexsvc/data/es)
->> curl -XGET 'http://localdev:9200/users/user/_search?pretty=1' -d @user_query.json
+$ curl -XGET 'http://localdev:9200/users/user/_search?pretty=1' -d @user_query.json
+
+
+Latest ES commands needed to get env up-to-date:
+# Users index
+$ curl -XPOST 'http://localdev:9200/users' -d @users.json
+$ python index_job_scheduler.py -i users -t user
+
+$ Topics index
+$ curl -XPOST 'http://localdev:9200/topics' -d @topics.json
+$ python index_job_scheduler.py -i topics -t topic
+
+# Technologies index
+$ curl -XPOST 'http://localdev:9200/technologies' -d @technologies.json
+$ python index_job_scheduler.py -i technologies -t technology
