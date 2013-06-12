@@ -31,8 +31,8 @@ update, delete), then you can subclass Indexer too.
 
 Useful ElasticSearch commands:
 # Delete users index
->> curl -XDELETE 'http://localdev:9200/users'
+$ curl -XDELETE 'http://localdev:9200/users'
 # Create users index with a mapping file (located at indexsvc/mappings)
->> curl -XPOST 'http://localdev:9200/users' -d @mapping
+$ curl -XPOST 'http://localdev:9200/users' -d @mappings/users.json
 # Query users index with file containing query (located at indexsvc/data/es)
->> curl -XGET 'http://localdev:9200/users/user/_search?pretty=1' -d @user_query.json
+$ curl -XGET 'http://localdev:9200/users/user/_search?pretty=1' -d @user_query.json
