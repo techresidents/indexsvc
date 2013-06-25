@@ -129,18 +129,10 @@ class ESUserDocument(object):
         Returns:
             None
         """
-        city = location_pref.location.city
-        state = location_pref.location.state
-        # using space as separator instead of comma since apisvc was choking on it
-        # This will be a non-issue once we move towards supporting geographic regions
-        # instead of city, state locations.
-        city_state = city + ' ' + state
         location_pref_dict = {
             'id': location_pref.id,
             'location_id': location_pref.location.id,
-            'city': city,
-            'state': state,
-            'name': city_state if city else state
+            'region': location_pref.location.region
         }
         self.location_prefs.append(location_pref_dict)
 
