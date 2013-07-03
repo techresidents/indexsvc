@@ -1,0 +1,38 @@
+{
+  "mappings": {
+    "location" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "region" : {
+          "type" : "multi_field",
+          "fields" : {
+            "region" : {
+              "type" : "string"
+            },
+            "autocomplete" : {
+              "type" : "string",
+              "analyzer" : "autocomplete",
+              "include_in_all" : false
+            }
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "analysis":{
+      "analyzer":{
+        "autocomplete":{
+          "type":"custom",
+          "tokenizer":"standard",
+          "filter":[ "standard", "lowercase", "engram_filter" ]
+        }
+      },
+    "filter": {
+        "engram_filter": { "type": "edgeNGram",  max_gram: 15 }
+      }
+    }
+  }
+}

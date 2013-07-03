@@ -11,19 +11,16 @@
         },
         "location_prefs" : {
           "properties" : {
-            "city" : {
-              "type" : "string"
-            },
             "id" : {
               "type" : "long"
             },
             "location_id" : {
               "type" : "long"
             },
-            "name" : {
+            "region" : {
               "type" : "multi_field",
               "fields" : {
-                "name" : {
+                "region" : {
                   "type" : "string"
                 },
                 "raw" : {
@@ -34,9 +31,6 @@
                   "include_in_all" : false
                 }
               }
-            },
-            "state" : {
-              "type" : "string"
             }
           }
         },

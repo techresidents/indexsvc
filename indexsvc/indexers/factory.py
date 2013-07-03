@@ -30,7 +30,8 @@ class IndexerFactory(Factory):
         ret = None
         if self.index_name == 'users' and self.doc_type == 'user' or\
            self.index_name == 'technologies' and self.doc_type == 'technology' or\
-           self.index_name == 'topics' and self.doc_type == 'topic':
+           self.index_name == 'topics' and self.doc_type == 'topic' or\
+           self.index_name == 'locations' and self.doc_type == 'location':
             ret = ESIndexer(
                 self.db_session_factory,
                 self.index_client_pool,
