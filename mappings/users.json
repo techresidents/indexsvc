@@ -12,6 +12,9 @@
         "actively_seeking" : {
           "type" : "boolean"
         },
+        "location" : {
+          "type" : "string"
+        },
         "location_prefs" : {
           "properties" : {
             "id" : {
