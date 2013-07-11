@@ -80,6 +80,8 @@ class ESTopicDocumentGenerator(DocumentGenerator):
                     "title": root_topic.title,
                     "description": root_topic.description,
                     "subtopic_summary": subtopic_summary,
+                    "public": topic.public,
+                    "active": topic.active,
                     "tree": topic_tree
                 }
                 yield (root_topic.id, topic_json)

@@ -17,6 +17,12 @@
         "title" : {
           "type" : "string"
         },
+        "public" : {
+          "type" : "boolean"
+        },
+        "active" : {
+          "type" : "boolean"
+        },
         "tree" : {
           "properties" : {
             "active" : {
