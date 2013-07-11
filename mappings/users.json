@@ -9,6 +9,9 @@
           "type" : "date",
           "format" : "dateOptionalTime"
         },
+        "actively_seeking" : {
+          "type" : "boolean"
+        },
         "location_prefs" : {
           "properties" : {
             "id" : {
