@@ -39,7 +39,12 @@ class ESUserDocumentGenerator(DocumentGenerator):
 
             for user in users:
                 # generate ES document JSON
-                es_user = ESUserDocument(user.id, user.date_joined)
+                es_user = ESUserDocument(
+                    id=user.id,
+                    date_joined=user.date_joined,
+                    location=user.developer_profile.location,
+                    actively_seeking=user.developer_profile.actively_seeking
+                )
                 for skill in user.skills:
                     es_user.add_skill(skill)
                 for location_pref in user.job_location_prefs:
@@ -74,7 +79,7 @@ class ESUserDocumentGenerator(DocumentGenerator):
 class ESUserDocument(object):
     """ESUserDocument holds all of the data needed to generate the ESUserDocument JSON
     """
-    def __init__(self, id, date_joined):
+    def __init__(self, id, date_joined, location, actively_seeking):
         """ESUserDocument Constructor
 
         Args:
@@ -83,6 +88,8 @@ class ESUserDocument(object):
         """
         self.id = id
         self.joined = date_joined
+        self.location = location
+        self.actively_seeking = actively_seeking
         self.skills = []
         self.technology_prefs = []
         self.location_prefs = []
@@ -94,12 +101,14 @@ class ESUserDocument(object):
         """ Return a JSON dictionary"""
         return {
             'id': self.id,
+            'joined': self.joined,
+            'location': self.location,
+            'actively_seeking': self.actively_seeking,
             'skills': self.skills,
             'technology_prefs': self.technology_prefs,
             'location_prefs': self.location_prefs,
             'position_prefs': self.position_prefs,
             'yrs_experience': self.yrs_experience,
-            'joined': self.joined,
             'score': self.score
         }
 
