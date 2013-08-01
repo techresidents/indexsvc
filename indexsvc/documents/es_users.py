@@ -1,6 +1,8 @@
 from datetime import datetime
+from sqlalchemy.orm import joinedload, joinedload_all
 
-from trsvcscore.db.models import User
+from trsvcscore.db.models import User, Chat, ChatReel, Skill, \
+        JobPositionTypePref, JobTechnologyPref, JobLocationPref
 
 from document import DocumentGenerator
 
@@ -31,7 +33,9 @@ class ESUserDocumentGenerator(DocumentGenerator):
 
             # Read all users at once as performance optimization
             developer_tenant_id = 1
-            query = db_session.query(User).filter(User.tenant_id==developer_tenant_id)
+            query = db_session.query(User)\
+                    .options(joinedload(User.developer_profile))\
+                    .filter(User.tenant_id==developer_tenant_id)
             if len(keys):
                 query = query.filter(User.id.in_(keys))
             # An empty keys list implies to index all keys
@@ -45,14 +49,48 @@ class ESUserDocumentGenerator(DocumentGenerator):
                     location=user.developer_profile.location,
                     actively_seeking=user.developer_profile.actively_seeking
                 )
-                for skill in user.skills:
+
+                #skills
+                skills = db_session.query(Skill)\
+                        .options(joinedload(Skill.technology))\
+                        .filter(Skill.user_id == user.id)\
+                        .all()
+                for skill in skills:
                     es_user.add_skill(skill)
-                for location_pref in user.job_location_prefs:
+
+                #location prefs
+                location_prefs = db_session.query(JobLocationPref)\
+                        .options(joinedload(JobLocationPref.location))\
+                        .filter(JobLocationPref.user_id == user.id)\
+                        .all()
+                for location_pref in location_prefs:
                     es_user.add_location_pref(location_pref)
-                for technology_pref in user.job_technology_prefs:
+
+                #technology prefs
+                technology_prefs = db_session.query(JobTechnologyPref)\
+                        .options(joinedload(JobTechnologyPref.technology))\
+                        .filter(JobTechnologyPref.user_id == user.id)\
+                        .all()
+                for technology_pref in technology_prefs:
                     es_user.add_technology_pref(technology_pref)
-                for position_pref in user.job_position_type_prefs:
+                
+
+                #position prefs
+                position_prefs = db_session.query(JobPositionTypePref)\
+                        .options(joinedload(JobPositionTypePref.position_type))\
+                        .filter(JobPositionTypePref.user_id == user.id)\
+                        .all()
+                for position_pref in position_prefs:
                     es_user.add_position_pref(position_pref)
+
+                #chats
+                reels = db_session.query(ChatReel)\
+                        .options(joinedload_all(ChatReel.chat, Chat.topic))\
+                        .filter(ChatReel.user_id == user.id)\
+                        .all()
+                for reel in reels:
+                    es_user.add_chat(reel.chat)
+
                 # Calculate total yrs experience
                 if user.developer_profile.developer_since:
                     current_year = datetime.now().year
@@ -65,6 +103,9 @@ class ESUserDocumentGenerator(DocumentGenerator):
                         if skill['yrs_experience'] > yrs_experience:
                             yrs_experience = skill['yrs_experience']
                     es_user.set_yrs_experience(yrs_experience)
+                
+                #calculate score
+                es_user.calculate_score()
 
                 # return (key, doc) tuple
                 yield (user.id, es_user.to_json())
@@ -94,8 +135,9 @@ class ESUserDocument(object):
         self.technology_prefs = []
         self.location_prefs = []
         self.position_prefs = []
+        self.chats = []
         self.yrs_experience = None
-        self.score = 0
+        self.score = 1.0
 
     def to_json(self):
         """ Return a JSON dictionary"""
@@ -108,6 +150,7 @@ class ESUserDocument(object):
             'technology_prefs': self.technology_prefs,
             'location_prefs': self.location_prefs,
             'position_prefs': self.position_prefs,
+            'chats': self.chats,
             'yrs_experience': self.yrs_experience,
             'score': self.score
         }
@@ -177,6 +220,21 @@ class ESUserDocument(object):
         }
         self.position_prefs.append(position_pref_dict)
 
+    def add_chat(self, chat):
+        """add_chat
+
+         Args:
+            chat: SQLAlchemy Chat object
+        Returns:
+            None
+        """
+        chat_dict = {
+            'id': chat.id,
+            'topic_id': chat.topic_id,
+            'topic_title': chat.topic.title
+        }
+        self.chats.append(chat_dict)
+
     def set_yrs_experience(self, yrs):
         """set_yrs_experience
 
@@ -186,3 +244,20 @@ class ESUserDocument(object):
             None
         """
         self.yrs_experience = yrs
+    
+    def calculate_score(self):
+        """calculate and store score"""
+        score = 1.0
+        if self.actively_seeking:
+            score += 2 
+        if self.skills:
+            score += 1
+        if self.chats:
+            score += 2
+        if self.location_prefs:
+            score += 0.5
+        if self.technology_prefs:
+            score += 0.5
+        if self.position_prefs:
+            score += 0.5
+        self.score = score
