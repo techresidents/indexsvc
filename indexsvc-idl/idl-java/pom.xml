@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.techresidents.services.indexsvc</groupId>
         <artifactId>indexsvc-idl</artifactId>
-        <version>0.7.0</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>indexsvc-idl-java</artifactId>
