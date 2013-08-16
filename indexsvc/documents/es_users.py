@@ -92,17 +92,12 @@ class ESUserDocumentGenerator(DocumentGenerator):
                     es_user.add_chat(reel.chat)
 
                 # Calculate total yrs experience
-                if user.developer_profile.developer_since:
-                    current_year = datetime.now().year
-                    yrs_experience = current_year - user.developer_profile.developer_since.year
-                    es_user.set_yrs_experience(yrs_experience)
-                else:
-                    # Derive total yrs experience from the skill with the most yrs
-                    yrs_experience = 0
-                    for skill in es_user.skills:
-                        if skill['yrs_experience'] > yrs_experience:
-                            yrs_experience = skill['yrs_experience']
-                    es_user.set_yrs_experience(yrs_experience)
+                # Derive total yrs experience from the skill with the most yrs
+                yrs_experience = 0
+                for skill in es_user.skills:
+                    if skill['yrs_experience'] > yrs_experience:
+                        yrs_experience = skill['yrs_experience']
+                es_user.set_yrs_experience(yrs_experience)
                 
                 #calculate score
                 es_user.calculate_score()
