@@ -2,8 +2,6 @@
   "mappings": {
     "user" : {
       "properties" : {
-
-
         "id" : {
           "type" : "long"
         },
@@ -12,6 +10,9 @@
           "format" : "dateOptionalTime"
         },
         "actively_seeking" : {
+          "type" : "boolean"
+        },
+        "demo" : {
           "type" : "boolean"
         },
         "location" : {
