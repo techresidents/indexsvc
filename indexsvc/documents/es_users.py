@@ -102,6 +102,10 @@ class ESUserDocumentGenerator(DocumentGenerator):
                 #calculate score
                 es_user.calculate_score()
 
+                # Make TR users visible in demo event
+                if user.email.endswith('@techresidents.com'):
+                    es_user.set_demo()
+
                 # return (key, doc) tuple
                 yield (user.id, es_user.to_json())
             db_session.commit()
@@ -133,6 +137,7 @@ class ESUserDocument(object):
         self.chats = []
         self.yrs_experience = None
         self.score = 1.0
+        self.demo = False # Visibility in demo event
 
     def to_json(self):
         """ Return a JSON dictionary"""
@@ -147,7 +152,8 @@ class ESUserDocument(object):
             'position_prefs': self.position_prefs,
             'chats': self.chats,
             'yrs_experience': self.yrs_experience,
-            'score': self.score
+            'score': self.score,
+            'demo': self.demo
         }
 
     def add_skill(self, skill):
@@ -256,3 +262,7 @@ class ESUserDocument(object):
         if self.position_prefs:
             score += 0.5
         self.score = score
+
+    def set_demo(self):
+        """ Make user visible to demo events. """
+        self.demo = True
