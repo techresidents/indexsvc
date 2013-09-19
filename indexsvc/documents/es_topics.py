@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from trsvcscore.db.models import Topic
+from trsvcscore.db.models import Topic, TopicTag, Tag
 from trsvcscore.db.managers.tree import TreeManager
 
 from document import DocumentGenerator
@@ -54,7 +54,9 @@ class ESTopicDocumentGenerator(DocumentGenerator):
             # the present time to search for sub-topics.  Subtopic titles
             # and descriptions are indexed via the 'subtopic_summary' field.
             root_topic_rank = 0
-            query = db_session.query(Topic).options(joinedload(Topic.type)) # TODO alternative to loading on Topic type using Enum
+
+            # TODO alternative to loading on Topic type using Enum
+            query = db_session.query(Topic).options(joinedload(Topic.type))
             query = query.filter(Topic.rank == root_topic_rank)
             if len(keys):
                 query = query.filter(Topic.id.in_(keys))
@@ -73,6 +75,18 @@ class ESTopicDocumentGenerator(DocumentGenerator):
                     if topic.rank != root_topic_rank:
                         subtopic_summary += topic.title + ' ' + topic.description
 
+                #tags
+                tags = db_session.query(Tag)\
+                        .join(TopicTag)\
+                        .filter(TopicTag.topic_id == root_topic.id)\
+                        .all()
+                tags_json = []
+                for tag in tags:
+                    tags_json.append({
+                        "id": tag.id,
+                        "name": tag.name
+                    })
+
                 topic_json = {
                     "id": root_topic.id,
                     "type": root_topic.type.name,
@@ -82,8 +96,10 @@ class ESTopicDocumentGenerator(DocumentGenerator):
                     "subtopic_summary": subtopic_summary,
                     "public": topic.public,
                     "active": topic.active,
-                    "tree": topic_tree
+                    "tree": topic_tree,
+                    "tags": tags_json
                 }
+
                 yield (root_topic.id, topic_json)
 
             db_session.commit()

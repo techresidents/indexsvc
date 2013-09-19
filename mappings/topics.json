@@ -2,6 +2,9 @@
   "mappings": {
     "topic" : {
       "properties" : {
+        "active" : {
+          "type" : "boolean"
+        },
         "description" : {
           "type" : "string"
         },
@@ -11,8 +14,33 @@
         "id" : {
           "type" : "long"
         },
+        "public" : {
+          "type" : "boolean"
+        },
         "subtopic_summary" : {
           "type" : "string"
+        },
+        "tags" : {
+          "properties" : {
+            "id" : {
+              "type" : "long"
+            },
+            "name" : {
+              "type" : "multi_field",
+              "fields" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "raw" : {
+                  "type" : "string",
+                  "index" : "not_analyzed",
+                  "omit_norms" : true,
+                  "index_options" : "docs",
+                  "include_in_all" : false
+                }
+              }
+            }
+          }
         },
         "title" : {
           "type" : "multi_field",
@@ -29,57 +57,51 @@
             }
           }
         },
-        "public" : {
-          "type" : "boolean"
-        },
-        "active" : {
-          "type" : "boolean"
-        },
         "tree" : {
           "properties" : {
             "active" : {
               "type" : "boolean",
-              "index": "no"
+              "index" : "no"
             },
             "description" : {
               "type" : "string",
-              "index": "no"
+              "index" : "no"
             },
             "duration" : {
               "type" : "integer",
-              "index": "no"
+              "index" : "no"
             },
             "id" : {
               "type" : "long",
-              "index": "no"
+              "index" : "no"
             },
             "level" : {
               "type" : "integer",
-              "index": "no"
+              "index" : "no"
             },
             "public" : {
               "type" : "boolean",
-              "index": "no"
+              "index" : "no"
             },
             "rank" : {
               "type" : "integer",
-              "index": "no"
+              "index" : "no"
             },
             "recommended_participants" : {
               "type" : "integer",
-              "index": "no"
+              "index" : "no"
             },
             "title" : {
               "type" : "string",
-              "index": "no"
+              "index" : "no"
             },
             "type" : {
               "type" : "string",
-              "index": "no"
+              "index" : "no"
             },
             "type_id" : {
               "type" : "long",
-              "index": "no"
+              "index" : "no"
             }
           }
         },
